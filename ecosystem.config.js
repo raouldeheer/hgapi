@@ -1,6 +1,6 @@
 const path = require("path");
 const dotenv = require("dotenv");
-dotenv().config(path.join("/etc", "hgwarmap.env"))
+dotenv.config(path.join("/etc", "hgwarmap.env"))
 
 module.exports = {
     apps: [{
