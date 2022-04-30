@@ -33,10 +33,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/raouldeheer/Heroes-and-Generals-community-project.git"
+    "url": "git+https://github.com/raouldeheer/hgwarmap.git"
   },
   "bugs": {
-    "url": "https://github.com/raouldeheer/Heroes-and-Generals-community-project/issues"
+    "url": "https://github.com/raouldeheer/hgwarmap/issues"
   },
-  "homepage": "https://github.com/raouldeheer/Heroes-and-Generals-community-project#readme"
+  "homepage": "https://github.com/raouldeheer/hgwarmap#readme"
 }
