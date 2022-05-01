@@ -1,4 +1,4 @@
-import { ClassKeys, Client, keyToClass, ResponseType } from "hagcp-network-client";
+import { ClassKeys, Client, keyToClass, KeyValueChangeKey, ResponseType } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -28,8 +28,8 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
                 gzipSync(keyToClass.get(ClassKeys.KeyValueChangeSet)!.toBuffer!({
                     set: [
-                        ...datastore.ItemstoreToKeyValueSet("battlefieldstatus").set!,
-                        ...datastore.ItemstoreToKeyValueSet("supplylinestatus").set!,
+                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set!,
+                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set!,
                     ]
                 }))
             );
@@ -70,6 +70,11 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                 console.log(`redirectSrv detected: ${data.redirectSrv}`);
             }
             await client.sendPacketAsync(ClassKeys.unsubscribewarmapview);
+            await saveMapNow();
+            saveMapTimer?.refresh?.();
+            datastore.ResetData(KeyValueChangeKey.battlefieldstatus);
+            datastore.ResetData(KeyValueChangeKey.supplylinestatus);
+            datastore.ResetData(KeyValueChangeKey.battle);
             await client.sendPacketAsync(ClassKeys.subscribewarmapview);
             await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
         } else {
@@ -80,15 +85,11 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             datastore.SaveData(data);
             if (data?.set) {
                 for (const iterator of data.set) {
-                    if (iterator.key == "war") {
+                    if (iterator.key === KeyValueChangeKey.war) {
                         const value = iterator.value;
                         warId = value.id;
                         if (value.sequelwarid !== "0") {
-                            saveMapNow();
-                            saveMapTimer?.refresh?.();
                             console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
-                            datastore.ResetData("battlefieldstatus");
-                            datastore.ResetData("supplylinestatus");
                             client.sendPacket(ClassKeys.join_war_request, {
                                 warid: Long.fromString(value.sequelwarid),
                                 factionid: Long.ZERO,
