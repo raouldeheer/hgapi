@@ -19,7 +19,7 @@
     "express": "^4.17.3",
     "hagcp-assets": "^1.0.5",
     "hagcp-network-client": "^1.0.6",
-    "hagcp-utils": "^1.0.5",
+    "hagcp-utils": "^1.0.7",
     "ip": "^1.1.5",
     "long": "^5.2.0",
     "morgan": "^1.10.0",
