@@ -92,6 +92,13 @@ const Warmap = ({
         }
     }
 
+    const onChange = (e: { target: { value: string; }; }) => {
+        const value = e.target.value;
+        if (value === "Select a faction") return;
+        warmapEventHandler.currentFaction = value;
+        console.log(e.target.value);
+    };
+
     return <div style={componentStyling}>
         <MapInteractionCSS minScale={0.10}
             defaultValue={{
@@ -101,6 +108,12 @@ const Warmap = ({
             <img src={image} style={mapStyles} alt="background map" />
             {sectors}
         </MapInteractionCSS>
+        <select name="select" onChange={onChange} style={posStyling}>
+            <option>Select a faction</option>
+            <option key={3}>SU</option>
+            <option key={2}>GE</option>
+            <option key={1}>US</option>
+        </select>
     </div>;
 };
 
