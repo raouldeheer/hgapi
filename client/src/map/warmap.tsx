@@ -1,4 +1,4 @@
-import image from "../imgs/background.png";
+import image from "hagcp-assets/images/background.png";
 import MapInteractionCSS from "./MapInteraction";
 import React from "react";
 import battlefield from "hagcp-assets/json/battlefield.json";
