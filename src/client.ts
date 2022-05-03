@@ -3,7 +3,6 @@ import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
 import Long from "long";
-import { setTimeout } from "timers/promises";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -22,7 +21,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         if (warId) {
             if (!client) return;
             await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
-            await setTimeout(1000, true);
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
@@ -97,6 +95,14 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                             });
                         }
                     }
+                }
+            }
+            if (data?.delete) for (const iterator of data.delete) {
+                if (iterator.key === KeyValueChangeKey.supplylinestatus) {
+                    datastore.SetData("deletesupplylinestatus", iterator.value, iterator.value);
+                    setTimeout(() => {
+                        datastore.SaveData({ delete: [{ key: "deletesupplylinestatus", value: iterator.value }] });
+                    }, 60000);
                 }
             }
         }

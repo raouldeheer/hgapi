@@ -1,14 +1,11 @@
-import { ClassKeys, Client, KeyValueChangeKey } from "hagcp-network-client";
+import { Client } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { drawToCanvas } from "hagcp-utils/canvas";
 import { loadTemplate } from "hagcp-assets";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
-import ip from "ip";
-import Long from "long";
 import { startAPI } from "./api";
-
 
 function cached<T>(threshold: number, action: () => Promise<T>): () => Promise<T> {
     let cachedData: T | null;
@@ -40,6 +37,11 @@ export async function startApp(datastore: DataStore, client: Client, lookupFacti
     app.use(morgan("tiny"));
     app.use(express.urlencoded({ extended: true }));
     app.use(compression());
+    app.use(express.static("client/build", {
+        setHeaders: res => {
+            res.set("Cache-control", "public, max-age=300");
+        }
+    }));
 
     app.get("/status", (_, res) => {
         res.set("Cache-control", "no-store");
@@ -53,11 +55,7 @@ export async function startApp(datastore: DataStore, client: Client, lookupFacti
         res.send(await cachedBuffer());
     });
 
-    app.use("/api", await startAPI(datastore, client, lookupFactions, expressDatastore, lookupTemplateFaction))
-
-    app.listen(expressPort, ip.address(), () => {
-        console.log(`Listing on http://${ip.address()}:${expressPort}/warmap.jpeg`);
-    });
+    app.use("/api", await startAPI(datastore, client, lookupFactions, expressDatastore, lookupTemplateFaction));
 
     return app;
 }

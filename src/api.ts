@@ -4,6 +4,12 @@ import { DataStore } from "hagcp-utils";
 import Long from "long";
 import { Accesspoint, AccesspointTemplate, Battle, Battlefield, Faction, MapPoint, Supplyline } from "./interfaces";
 
+const shortToId = new Map<string, string>([
+    ["SU", "3"],
+    ["GE", "2"],
+    ["US", "1"],
+]);
+
 export async function startAPI(datastore: DataStore, client: Client, lookupFactions: Map<string, any>, expressDatastore: DataStore, lookupTemplateFaction: Map<string, any>) {
     const resolveTitle = (bftitle: string): MapPoint => {
         if (bftitle.includes(" - ")) {
@@ -107,7 +113,6 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/hostingcenter", async (req, res) => {
-        if (!client) res.sendStatus(500);
         res.set("Cache-control", "public, max-age=60");
         if (req.query.hostingCenterId) {
             const hostingCenterId = String(req.query.hostingCenterId);
@@ -120,7 +125,6 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/battlefield", async (req, res) => {
-        if (!client) res.sendStatus(500);
         res.set("Cache-control", "public, max-age=60");
         if (req.query.id) {
             const id = String(req.query.id);
@@ -146,7 +150,6 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/supplyline", async (req, res) => {
-        if (!client) res.sendStatus(500);
         res.set("Cache-control", "public, max-age=60");
         if (req.query.id) {
             const id = String(req.query.id);
@@ -164,7 +167,6 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/faction", async (req, res) => {
-        if (!client) res.sendStatus(500);
         res.set("Cache-control", "public, max-age=60");
         if (req.query.factionId) {
             const factionId = String(req.query.factionId);
@@ -193,7 +195,6 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/bftitle", async (req, res) => {
-        if (!client) res.sendStatus(500);
         res.set("Cache-control", "public, max-age=60");
         if (req.query.id) {
             const id = String(req.query.id);
@@ -238,6 +239,46 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
                 playerGamerTag: gamertag
             }));
             return;
+        }
+        res.sendStatus(412);
+    });
+
+    app.get("/supplylinestatus.json", (_, res) => {
+        res.set("Cache-control", "public, max-age=20");
+        res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.supplylinestatus)?.values?.() || []));
+    });
+
+    app.get("/battlefieldstatus.json", (_, res) => {
+        res.set("Cache-control", "public, max-age=20");
+        res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.battlefieldstatus)?.values?.() || []));
+    });
+
+    app.get("/deletesupplylinestatus.json", (_, res) => {
+        res.set("Cache-control", "public, max-age=20");
+        res.json(Array.from(datastore.GetItemStore("deletesupplylinestatus")?.values?.() || []));
+    });
+
+    app.get("/factions.json", async (_, res) => {
+        res.set("Cache-control", "public, max-age=60");
+        res.json(Array.from(lookupFactions.values()));
+    });
+    
+    app.get("/factionbattles/:id.json", async (req, res) => {
+        if (!client) res.sendStatus(500);
+        res.set("Cache-control", "public, max-age=20");
+        if (req.params.id) {
+            const id = shortToId.get(String(req.params.id));
+            if (id) {
+                res.json(await Promise.all(
+                    Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
+                        .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId)
+                        .map(async value => ({
+                            ...value,
+                            MissionDetails: await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
+                        }))
+                ));
+                return;
+            }
         }
         res.sendStatus(412);
     });
