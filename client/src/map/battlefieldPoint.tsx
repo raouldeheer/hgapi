@@ -1,7 +1,7 @@
 import { Component } from "react";
 import { Circle, Text } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
-import { Battlefield, battlefieldstatus } from "./mapInterfaces";
+import { Battlefield } from "./mapInterfaces";
 
 interface BattlefieldProps {
     battlefield: Battlefield;
@@ -30,11 +30,14 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
         this.setState(state => ({ ...state, battlefieldstatusId: data }));
     };
 
+    battleDeleteCallback = () => {
+        this.setState(state => ({ ...state, battleId: undefined }));
+    }
+
     battleCallback = (data: string) => {
         this.setState(state => ({ ...state, battleId: data }));
-        this.warmapEventHandler.once(`battledelete${data}`, () => {
-            this.setState(state => ({ ...state, battleId: undefined }));
-        });
+        this.warmapEventHandler.removeListener(`battledelete${data}`, this.battleDeleteCallback);
+        this.warmapEventHandler.once(`battledelete${data}`, this.battleDeleteCallback);
     };
 
     componentDidMount(): void {
@@ -47,20 +50,11 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
         this.warmapEventHandler.removeListener(`battlesetmapEntityId${this.props.battlefield.id}`, this.battleCallback);
     }
 
-    clicked = () => {
-        if (this.state.battleId)
-            this.warmapEventHandler.emit("BattlefieldInfoPopup_Show", this.state.battleId);
-    };
-
     render() {
         let color = "#888";
         if (this.state.battlefieldstatusId) {
-            const status = this.warmapEventHandler.datastore
-                .GetData<battlefieldstatus>("battlefieldstatus", this.state.battlefieldstatusId);
-            if (status) {
-                color = this.warmapEventHandler.lookupFactions
-                    .get(status.factionid)?.color;
-            }
+            const status = this.warmapEventHandler.battlefieldstatusMap.get(this.state.battlefieldstatusId);
+            if (status) color = this.warmapEventHandler.lookupFactions.get(status.factionid)?.color;
         }
 
         const battle = this.warmapEventHandler.GetBattle(this.state.battleId);
@@ -73,7 +67,6 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 stroke={battle ? "orange" : "black"}
                 strokeWidth={2}
                 fill={color}
-                onClick={this.clicked}
                 transformsEnabled={"position"}
             />
             <Text

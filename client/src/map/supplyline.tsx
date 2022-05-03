@@ -1,7 +1,7 @@
 import { Component } from "react";
 import { Circle, Line } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
-import { supplylinestatus, supplyline } from "./mapInterfaces";
+import { supplyline } from "./mapInterfaces";
 
 interface SupplylineProps {
     supplyline: supplyline;
@@ -40,11 +40,14 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         });
     };
 
+    battleDeleteCallback = () => {
+        this.setState(state => ({ ...state, battleId: undefined }));
+    }
+
     battleCallback = (data: string) => {
         this.setState(state => ({ ...state, battleId: data }));
-        this.warmapEventHandler.once(`battledelete${data}`, () => {
-            this.setState(state => ({ ...state, battleId: undefined }));
-        });
+        this.warmapEventHandler.removeListener(`battledelete${data}`, this.battleDeleteCallback);
+        this.warmapEventHandler.once(`battledelete${data}`, this.battleDeleteCallback);
     };
 
     componentDidMount(): void {
@@ -57,20 +60,11 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         this.warmapEventHandler.removeListener(`battlesetmapEntityId${this.props.supplyline.id}`, this.battleCallback);
     }
 
-    clicked = () => {
-        if (this.state.battleId)
-            this.warmapEventHandler.emit("BattlefieldInfoPopup_Show", this.state.battleId);
-    };
-
     render() {
         let color = "#888";
         if (this.state.supplylinestatusId) {
-            const status = this.warmapEventHandler.datastore
-                .GetData<supplylinestatus>("supplylinestatus", this.state.supplylinestatusId);
-            if (status) {
-                color = this.warmapEventHandler.lookupFactions
-                    .get(status.factionid)?.color;
-            }
+            const status = this.warmapEventHandler.supplylinestatusMap.get(this.state.supplylinestatusId);
+            if (status) color = this.warmapEventHandler.lookupFactions.get(status.factionid)?.color;
         }
 
         const battle = this.warmapEventHandler.GetBattle(this.state.battleId);
@@ -95,7 +89,6 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
                 y={this.posy1 + (this.posy2 - this.posy1) * Number(battle.position)}
                 radius={8}
                 fill="orange"
-                onClick={this.clicked}
             /> : null}
         </>;
     }

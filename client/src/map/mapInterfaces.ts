@@ -293,6 +293,7 @@ export interface battle {
     excludedFactionId: string;
     position: string;
     activationTimeStamp: string;
+    MissionDetails: GetMissionDetailsResponse;
 }
 
 export interface supplylinestatus {
