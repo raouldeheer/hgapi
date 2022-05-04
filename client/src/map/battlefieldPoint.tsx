@@ -1,7 +1,8 @@
 import { Component } from "react";
 import { Circle, Text } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
-import { Battlefield } from "./mapInterfaces";
+import { battleIdToColor } from "./battleUtils";
+import { Battlefield, MissionStatus, ResponseType } from "./mapInterfaces";
 
 interface BattlefieldProps {
     battlefield: Battlefield;
@@ -32,7 +33,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
 
     battleDeleteCallback = () => {
         this.setState(state => ({ ...state, battleId: undefined }));
-    }
+    };
 
     battleCallback = (data: string) => {
         this.setState(state => ({ ...state, battleId: data }));
@@ -57,14 +58,12 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
             if (status) color = this.warmapEventHandler.lookupFactions.get(status.factionid)?.color;
         }
 
-        const battle = this.warmapEventHandler.GetBattle(this.state.battleId);
-
         return <>
             <Circle
                 x={this.props.battlefield.posx}
                 y={this.props.battlefield.posy}
                 radius={this.pointSize}
-                stroke={battle ? "orange" : "black"}
+                stroke={battleIdToColor(this.warmapEventHandler, this.state.battleId, color, "0")}
                 strokeWidth={2}
                 fill={color}
                 transformsEnabled={"position"}

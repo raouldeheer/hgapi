@@ -1,6 +1,12 @@
 import EventEmitter from "events";
 import { battle, battlefieldstatus, supplylinestatus } from "./map/mapInterfaces";
 
+const ShortToTemplateId = new Map([
+    ["SU", "3"],
+    ["GE", "2"],
+    ["US", "1"],
+])
+
 export class WarmapEventHandler extends EventEmitter {
     public readonly lookupFactions: Map<string, any>;
     public readonly lookupFactionsByTemplateId: Map<string, any>;
@@ -24,6 +30,13 @@ export class WarmapEventHandler extends EventEmitter {
         }, 10000);
     }
 
+    public get currentFactionId() : string | null {
+        if (!this.currentFaction) return null;
+        const id = ShortToTemplateId.get(this.currentFaction);
+        if (!id) return null;
+        return this.lookupFactionsByTemplateId.get(id);
+    }
+    
     private async getApi(endpoint: string) {
         return (await fetch(endpoint)).json();
     }
