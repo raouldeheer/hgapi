@@ -34,7 +34,7 @@ export class WarmapEventHandler extends EventEmitter {
         if (!this.currentFaction) return null;
         const id = ShortToTemplateId.get(this.currentFaction);
         if (!id) return null;
-        return this.lookupFactionsByTemplateId.get(id);
+        return this.lookupFactionsByTemplateId.get(id).factionId;
     }
     
     private async getApi(endpoint: string) {

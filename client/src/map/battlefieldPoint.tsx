@@ -63,7 +63,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 x={this.props.battlefield.posx}
                 y={this.props.battlefield.posy}
                 radius={this.pointSize}
-                stroke={battleIdToColor(this.warmapEventHandler, this.state.battleId, color, "0")}
+                stroke={battleIdToColor(this.warmapEventHandler, this.state.battleId, "0")}
                 strokeWidth={2}
                 fill={color}
                 transformsEnabled={"position"}

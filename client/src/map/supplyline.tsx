@@ -89,7 +89,7 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
                 x={this.posx1 + (this.posx2 - this.posx1) * Number(battle.position)}
                 y={this.posy1 + (this.posy2 - this.posy1) * Number(battle.position)}
                 radius={8}
-                fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, color, "1")}
+                fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, "1")}
             /> : null}
         </>;
     }
