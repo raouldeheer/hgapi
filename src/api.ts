@@ -244,17 +244,17 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     });
 
     app.get("/supplylinestatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=20");
+        res.set("Cache-control", "public, max-age=10");
         res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.supplylinestatus)?.values?.() || []));
     });
 
     app.get("/battlefieldstatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=20");
+        res.set("Cache-control", "public, max-age=10");
         res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.battlefieldstatus)?.values?.() || []));
     });
 
     app.get("/deletesupplylinestatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=20");
+        res.set("Cache-control", "public, max-age=10");
         res.json(Array.from(datastore.GetItemStore("deletesupplylinestatus")?.values?.() || []));
     });
 
@@ -265,7 +265,7 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
     
     app.get("/factionbattles/:id.json", async (req, res) => {
         if (!client) res.sendStatus(500);
-        res.set("Cache-control", "public, max-age=20");
+        res.set("Cache-control", "public, max-age=15");
         if (req.params.id) {
             const id = shortToId.get(String(req.params.id));
             if (id) {
