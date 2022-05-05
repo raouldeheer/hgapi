@@ -10,7 +10,41 @@ const shortToId = new Map<string, string>([
     ["US", "1"],
 ]);
 
-export async function startAPI(datastore: DataStore, client: Client, lookupFactions: Map<string, any>, expressDatastore: DataStore, lookupTemplateFaction: Map<string, any>) {
+class CachedRequests<T, Y> {
+    private readonly cachedResults: Map<T, Y>;
+    constructor(
+        private readonly threshold: number,
+        private readonly action: (input: T) => Promise<Y>
+    ) {
+        this.cachedResults = new Map;
+    }
+    public async request(input: T): Promise<Y> {
+        if (this.cachedResults.has(input)) {
+            const result = this.cachedResults.get(input);
+            if (result) return result;
+        }
+        const outputResult = await this.action(input);
+        this.cachedResults.set(input, outputResult);
+        setTimeout(() => {
+            this.cachedResults.delete(input);
+        }, this.threshold * 1000);
+        return outputResult;
+    }
+}
+
+export async function startAPI(
+    datastore: DataStore,
+    client: Client,
+    lookupFactions: Map<string, any>,
+    expressDatastore: DataStore,
+    lookupTemplateFaction: Map<string, any>
+) {
+    const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
+        client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+            missionId: 0,
+            battleId: Long.fromString(input),
+        }));
+
     const resolveTitle = (bftitle: string): MapPoint => {
         if (bftitle.includes(" - ")) {
             const battlefield = Array.from(expressDatastore.GetItemStore<Battlefield>(KeyValueChangeKey.battlefield)?.values() || [])
@@ -262,10 +296,10 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
         res.set("Cache-control", "public, max-age=60");
         res.json(Array.from(lookupFactions.values()));
     });
-    
+
     app.get("/factionbattles/:id.json", async (req, res) => {
         if (!client) res.sendStatus(500);
-        res.set("Cache-control", "public, max-age=15");
+        res.set("Cache-control", "public, max-age=5");
         if (req.params.id) {
             const id = shortToId.get(String(req.params.id));
             if (id) {
@@ -274,7 +308,7 @@ export async function startAPI(datastore: DataStore, client: Client, lookupFacti
                         .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId)
                         .map(async value => ({
                             ...value,
-                            MissionDetails: await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
+                            MissionDetails: await GetMissionDetailsCache.request(value.id),
                         }))
                 ));
                 return;
