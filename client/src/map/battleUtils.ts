@@ -25,10 +25,11 @@ enum ResourceTypes {
 export function battleIdToColor(
     warmapEventHandler: WarmapEventHandler,
     battleId: string | undefined,
-    battleType: "0" | "1"
+    battleType: "0" | "1",
+    defaultColor?: string
 ) {
     const battle = warmapEventHandler.GetBattle(battleId);
-    let battleColor = "Black";
+    let battleColor = defaultColor || "Black";
     if (battle) {
         if (battle.MissionDetails.response === 0) {
             const status = battle.MissionDetails.info?.status;

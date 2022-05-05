@@ -2,7 +2,7 @@ import { Component } from "react";
 import { Circle, Text } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import { battleIdToColor } from "./battleUtils";
-import { Battlefield, MissionStatus, ResponseType } from "./mapInterfaces";
+import { Battlefield } from "./mapInterfaces";
 
 interface BattlefieldProps {
     battlefield: Battlefield;
@@ -63,9 +63,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 x={this.props.battlefield.posx}
                 y={this.props.battlefield.posy}
                 radius={this.pointSize}
-                stroke={battleIdToColor(this.warmapEventHandler, this.state.battleId, "0")}
-                strokeWidth={2}
-                fill={color}
+                fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, "0", color)}
                 transformsEnabled={"position"}
             />
             <Text
