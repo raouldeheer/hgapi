@@ -36,13 +36,14 @@ export function battleIdToColor(
             switch (status) {
                 case MissionStatus.MissionOpen:
                     battleColor = "White";
-                    const totalResources = battle.MissionDetails.armyResources.reduce<Map<number, number>>((prev, curr) => {
+                    const totalResources = battle?.MissionDetails?.armyResources?.reduce?.<Map<number, number>>((prev, curr) => {
                         if (warmapEventHandler.currentFactionId !== curr.factionId) return prev;
                         const CategoryId = Number(curr.armyResourceCategoryId);
                         const value = prev.get(CategoryId);
                         prev.set(CategoryId, value ? value + curr.count : curr.count);
                         return prev;
                     }, new Map());
+                    if (!totalResources) return battleColor;
                     if (!battleIsFun(totalResources, battleType)) battleColor = "Aqua";
                     break;
                 case MissionStatus.MissionRunning:
