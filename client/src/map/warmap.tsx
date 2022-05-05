@@ -1,8 +1,8 @@
 import image from "hagcp-assets/images/background.png";
 import MapInteractionCSS from "./MapInteraction";
 import React from "react";
-import battlefield from "hagcp-assets/json/battlefield.json";
-import supplyline from "hagcp-assets/json/supplyline.json";
+import battlefield from "../json/battlefield.json";
+import supplyline from "../json/supplyline.json";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import MapSector from "./mapSector";
 
@@ -61,20 +61,12 @@ function lineLine(x1: number, y1: number, x2: number, y2: number, x3: number, y3
  * @param ry rect y
  * @param rw rect x size
  * @param rh rect y size
- * @returns 
  */
-function lineRect(x1: number, y1: number, x2: number, y2: number, rx: number, ry: number, rw: number, rh: number) {
-    // check if the line has hit any of the rectangle's sides
-    // uses the Line/Line function below
-    const left = lineLine(x1, y1, x2, y2, rx, ry, rx, ry + rh);
-    const right = lineLine(x1, y1, x2, y2, rx + rw, ry, rx + rw, ry + rh);
-    const top = lineLine(x1, y1, x2, y2, rx, ry, rx + rw, ry);
-    const bottom = lineLine(x1, y1, x2, y2, rx, ry + rh, rx + rw, ry + rh);
-
-    // if ANY of the above are true, the line
-    // has hit the rectangle
-    return (left || right || top || bottom);
-}
+const lineRect = (x1: number, y1: number, x2: number, y2: number, rx: number, ry: number, rw: number, rh: number) =>
+    lineLine(x1, y1, x2, y2, rx, ry, rx, ry + rh) ||
+    lineLine(x1, y1, x2, y2, rx + rw, ry, rx + rw, ry + rh) ||
+    lineLine(x1, y1, x2, y2, rx, ry, rx + rw, ry) ||
+    lineLine(x1, y1, x2, y2, rx, ry + rh, rx + rw, ry + rh);
 
 function addToSector(sectors: any[][], index: number, element: any) {
     if (index > totalChunks) return;
@@ -97,14 +89,15 @@ supplyline.forEach((element: any) => {
     const index = posToSector(element.posx1, element.posy1);
     addToSector(supsSectors, index, element);
     const index2 = posToSector(element.posx2, element.posy2);
-    if (index !== index2) addToSector(supsSectors, index2, element);
-    for (let x = 0; x < numberOfChunks; x++) {
-        for (let y = 0; y < numberOfChunks; y++) {
-            const index = (y * numberOfChunks) + x;
-            if (lineRect(
-                element.posx1, element.posy1, element.posx2, element.posy2,
-                baseWidth * x, baseHeight * y, baseWidth, baseHeight
-            )) addToSector(supsSectors, index, element);
+    if (index !== index2) {
+        for (let x = 0; x < numberOfChunks; x++) {
+            for (let y = 0; y < numberOfChunks; y++) {
+                const index = (y * numberOfChunks) + x;
+                if (lineRect(
+                    element.posx1, element.posy1, element.posx2, element.posy2,
+                    baseWidth * x, baseHeight * y, baseWidth, baseHeight
+                )) addToSector(supsSectors, index, element);
+            }
         }
     }
 });
