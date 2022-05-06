@@ -90,6 +90,9 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
                 y={this.posy1 + (this.posy2 - this.posy1) * Number(battle.position)}
                 radius={10}
                 fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, "1")}
+                listening={false}
+                transformsEnabled={"position"}
+                perfectDrawEnabled={false}
             /> : null}
         </>;
     }

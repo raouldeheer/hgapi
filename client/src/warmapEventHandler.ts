@@ -26,9 +26,10 @@ export class WarmapEventHandler extends EventEmitter {
         this.supplylinestatusMap = new Map();
         this.lookupFactions = new Map<string, any>();
         this.lookupFactionsByTemplateId = new Map<string, any>();
-        setInterval(async () => {
-            await this.loop();
-        }, 10000);
+
+        setTimeout(() => {
+            this.loop();
+        }, 5000);
     }
 
     public get currentFactionId(): string | null {
@@ -101,6 +102,9 @@ export class WarmapEventHandler extends EventEmitter {
                 this.emit(`battlesetmapEntityId${element.mapEntityId}`, element.id);
             });
         }
+        setTimeout(() => {
+            this.loop();
+        }, 5000);
     }
 
     public GetBattle = (battleId?: string): battle | undefined =>

@@ -28,14 +28,22 @@ const MapSector = ({
         // effect
     }, []);
 
-    return <Stage style={{
-        position: "absolute",
-        top: `${offsety}px`,
-        left: `${offsetx}px`,
-        width: `${posx}px`,
-        height: `${posy}px`
-    }} key={`sector${index}`} width={posx} height={posy} offsetX={offsetx} offsetY={offsety}>
-        <Layer>
+    return <Stage
+        style={{
+            position: "absolute",
+            top: `${offsety}px`,
+            left: `${offsetx}px`,
+            width: `${posx}px`,
+            height: `${posy}px`
+        }}
+        key={`sector${index}`}
+        width={posx}
+        height={posy}
+        offsetX={offsetx}
+        offsetY={offsety}
+        listening={false}
+    >
+        <Layer listening={false}>
             {supsSectors[index]?.map(element => <Supplyline
                 key={element.id}
                 supplyline={element}

@@ -64,7 +64,9 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 y={this.props.battlefield.posy}
                 radius={this.pointSize}
                 fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, "0", color)}
+                listening={false}
                 transformsEnabled={"position"}
+                perfectDrawEnabled={false}
             />
             <Text
                 text={this.props.battlefield.bftitle}
@@ -72,6 +74,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 y={this.props.battlefield.posy + this.pointSize}
                 listening={false}
                 transformsEnabled={"position"}
+                perfectDrawEnabled={false}
             />
         </>;
     }
