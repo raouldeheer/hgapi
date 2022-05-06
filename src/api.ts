@@ -34,13 +34,13 @@ class CachedRequests<T, Y> {
 
 export async function startAPI(
     datastore: DataStore,
-    client: Client,
     lookupFactions: Map<string, any>,
     expressDatastore: DataStore,
-    lookupTemplateFaction: Map<string, any>
+    lookupTemplateFaction: Map<string, any>,
+    client?: Client,
 ) {
     const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
-        client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+        client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
             missionId: 0,
             battleId: Long.fromString(input),
         }));
@@ -105,7 +105,7 @@ export async function startAPI(
                         .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(factionTemplateId).factionId)
                         .map(async value => ({
                             ...value,
-                            MissionDetails: await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
+                            MissionDetails: await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
                         }))
                 ));
                 return;
@@ -125,7 +125,7 @@ export async function startAPI(
                     .find(value => value.mapEntityId === mapPoint.id);
                 if (!battle) throw 404;
 
-                res.json(await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+                res.json(await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
                     missionId: 0,
                     battleId: Long.fromString(battle.id),
                 }));
@@ -136,7 +136,7 @@ export async function startAPI(
         } else if (req.query.battleId) {
             const battleId = String(req.query.battleId);
             if (/^\d+$/.test(battleId)) {
-                res.json(await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+                res.json(await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
                     missionId: 0,
                     battleId: Long.fromString(battleId),
                 }));
@@ -251,11 +251,11 @@ export async function startAPI(
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {
-                const gamertag = (await client.sendPacketAsync<{ gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
+                const gamertag = (await client!.sendPacketAsync<{ gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
                     playerId: Long.fromString(id)
                 })).gamertag;
                 if (gamertag) {
-                    res.json(await client.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
+                    res.json(await client!.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
                         playerGamerTag: gamertag
                     }));
                     return;
@@ -269,7 +269,7 @@ export async function startAPI(
                 res.sendStatus(418); //! This should never happen!
                 return;
             }
-            res.json(await client.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
+            res.json(await client!.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
                 playerGamerTag: gamertag
             }));
             return;

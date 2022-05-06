@@ -20,7 +20,7 @@ function cached<T>(threshold: number, action: () => Promise<T>): () => Promise<T
     };
 }
 
-export async function startApp(datastore: DataStore, client: Client, lookupFactions: Map<string, any>, expressPort: number, lookupTemplateFaction: Map<string, any>) {
+export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, expressPort: number, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const cachedBuffer = cached(60 * 15, async () => {
         const canvas = await drawToCanvas(expressDatastore, datastore, id => lookupFactions.get(id).color, lookupFactions);
         return canvas.toBuffer("image/jpeg");
@@ -45,7 +45,7 @@ export async function startApp(datastore: DataStore, client: Client, lookupFacti
 
     app.get("/status", (_, res) => {
         res.set("Cache-control", "no-store");
-        res.sendStatus(client.connected ? 200 : 500);
+        res.sendStatus(client?.connected ? 200 : 500);
     });
 
     app.get("/warmap.jpeg", async (_, res) => {
@@ -55,7 +55,7 @@ export async function startApp(datastore: DataStore, client: Client, lookupFacti
         res.send(await cachedBuffer());
     });
 
-    app.use("/api", await startAPI(datastore, client, lookupFactions, expressDatastore, lookupTemplateFaction));
+    app.use("/api", await startAPI(datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client));
 
     return app;
 }
