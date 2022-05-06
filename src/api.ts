@@ -95,7 +95,10 @@ export async function startAPI(
 
     const app = express();
     app.get("/battles", async (req, res) => {
-        if (!client) res.sendStatus(500);
+        if (!client) {
+            res.sendStatus(500);
+            return;
+        }
         res.set("Cache-control", "public, max-age=60");
         if (req.query.factionTemplateId) {
             const factionTemplateId = String(req.query.factionTemplateId);
@@ -115,7 +118,10 @@ export async function startAPI(
     });
 
     app.get("/missiondetails", async (req, res) => {
-        if (!client) res.sendStatus(500);
+        if (!client) {
+            res.sendStatus(500);
+            return;
+        }
         res.set("Cache-control", "no-store");
         if (req.query.bftitle) {
             try {
@@ -246,7 +252,10 @@ export async function startAPI(
     });
 
     app.get("/playerdetail", async (req, res) => {
-        if (!client) res.sendStatus(500);
+        if (!client) {
+            res.sendStatus(500);
+            return;
+        }
         res.set("Cache-control", "public, max-age=60");
         if (req.query.id) {
             const id = String(req.query.id);
@@ -298,7 +307,10 @@ export async function startAPI(
     });
 
     app.get("/factionbattles/:id.json", async (req, res) => {
-        if (!client) res.sendStatus(500);
+        if (!client) {
+            res.sendStatus(500);
+            return;
+        }
         res.set("Cache-control", "public, max-age=5");
         if (req.params.id) {
             const id = shortToId.get(String(req.params.id));

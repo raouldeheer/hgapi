@@ -49,7 +49,10 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     });
 
     app.get("/warmap.jpeg", async (_, res) => {
-        if (!client) res.sendStatus(500);
+        if (!client) {
+            res.sendStatus(500);
+            return;
+        }
         res.contentType("image/jpeg");
         res.set("Cache-control", "public, max-age=60");
         res.send(await cachedBuffer());
