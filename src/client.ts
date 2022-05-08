@@ -73,6 +73,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             datastore.ResetData(KeyValueChangeKey.battlefieldstatus);
             datastore.ResetData(KeyValueChangeKey.supplylinestatus);
             datastore.ResetData(KeyValueChangeKey.battle);
+            lookupFactions.clear();
             await client.sendPacketAsync(ClassKeys.subscribewarmapview);
             await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
         } else {
