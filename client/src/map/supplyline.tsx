@@ -2,7 +2,6 @@ import { Component } from "react";
 import { Circle, Line } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import { battleIdToColor } from "./battleUtils";
-import { supplyline } from "./mapInterfaces";
 
 interface SupplylineProps {
     supplylineId: string;

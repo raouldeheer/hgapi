@@ -2,7 +2,6 @@ import { Component } from "react";
 import { Circle, Text, Path, Star } from "react-konva";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import { battleIdToColor } from "./battleUtils";
-import { Battlefield } from "./mapInterfaces";
 
 interface BattlefieldProps {
     battlefieldId: string;

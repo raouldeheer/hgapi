@@ -1,6 +1,6 @@
 import image from "hagcp-assets/images/background.png";
 import MapInteractionCSS from "./MapInteraction";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import MapSector from "./mapSector";
 import sectorsToDraw from "../json/sectors.json";
