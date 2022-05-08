@@ -2,7 +2,7 @@ import BattlefieldPoint from "./battlefieldPoint";
 import { Stage, Layer } from "react-konva";
 import Supplyline from "./supplyline";
 import { WarmapEventHandler } from "../warmapEventHandler";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const MapSector = ({
     posx,
@@ -10,8 +10,6 @@ const MapSector = ({
     offsetx,
     offsety,
     index,
-    supsSectors,
-    bfsSectors,
     warmapEventHandler,
 }: {
     posx: number;
@@ -19,14 +17,19 @@ const MapSector = ({
     offsetx: number;
     offsety: number;
     index: number;
-    supsSectors: any[][];
-    bfsSectors: any[][];
     warmapEventHandler: WarmapEventHandler;
 }): JSX.Element => {
+    const [mapPoints, setMapPoints] = useState({ bfsSector: [], supsSector: [] });
 
     useEffect(() => {
-        // effect
-    }, []);
+        (async () => {
+            const [bfsSector, supsSector] = await Promise.all([
+                fetch(`/assets/bfsSectors/${index}.json`).then(value => value.json()).catch(() => []),
+                fetch(`/assets/supsSectors/${index}.json`).then(value => value.json()).catch(() => []),
+            ]);
+            setMapPoints({ bfsSector, supsSector });
+        })();
+    }, [index]);
 
     return <Stage
         style={{
@@ -44,14 +47,14 @@ const MapSector = ({
         listening={false}
     >
         <Layer listening={false}>
-            {supsSectors[index]?.map(element => <Supplyline
-                key={element.id}
-                supplyline={element}
+            {mapPoints.supsSector.map(element => <Supplyline
+                key={element}
+                supplylineId={element}
                 warmapEventHandler={warmapEventHandler}
             />)}
-            {bfsSectors[index]?.map(element => <BattlefieldPoint
-                key={element.id}
-                battlefield={element}
+            {mapPoints.bfsSector.map(element => <BattlefieldPoint
+                key={element}
+                battlefieldId={element}
                 warmapEventHandler={warmapEventHandler}
             />)}
         </Layer>

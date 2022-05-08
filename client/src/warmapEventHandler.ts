@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { battle, battlefieldstatus, supplylinestatus } from "./map/mapInterfaces";
+import capital from "hagcp-assets/json/capital.json";
 
 const ShortToTemplateId = new Map([
     ["SU", "3"],
@@ -16,6 +17,10 @@ export class WarmapEventHandler extends EventEmitter {
     private readonly battlesMap: Map<string, battle>;
     public readonly battlefieldstatusMap: Map<string, battlefieldstatus>;
     public readonly supplylinestatusMap: Map<string, supplylinestatus>;
+    public readonly capitals: Set<string>;
+    public readonly battlefields: Map<string, any>;
+    public readonly supplylines: Map<string, any>;
+
     constructor() {
         super();
         this.setMaxListeners(32);
@@ -24,12 +29,36 @@ export class WarmapEventHandler extends EventEmitter {
         this.battlesMap = new Map();
         this.battlefieldstatusMap = new Map();
         this.supplylinestatusMap = new Map();
-        this.lookupFactions = new Map<string, any>();
-        this.lookupFactionsByTemplateId = new Map<string, any>();
+        this.lookupFactions = new Map();
+        this.lookupFactionsByTemplateId = new Map();
+        this.capitals = new Set();
+        this.battlefields = new Map();
+        this.supplylines = new Map();
+        capital.forEach(element => {
+            this.capitals.add(element.battlefieldId);
+        });
 
-        setTimeout(() => {
-            this.loop();
-        }, 5000);
+        (async () => {
+            await Promise.all([
+                fetch("/assets/battlefield.json").then(value => value.json()).then(battlefield => {
+                    battlefield.forEach((element: { id: string; }) => {
+                        this.battlefields.set(element.id, element);
+                    });
+                }),
+                fetch("/assets/supplyline.json").then(value => value.json()).then(supplyline => {
+                    supplyline.forEach((element: { id: string; }) => {
+                        this.supplylines.set(element.id, element);
+                    });
+                }),
+            ]);
+        })();
+
+        window.addEventListener("load", () => {
+            console.log("Page loaded!");
+            setTimeout(() => {
+                this.loop();
+            }, 500);
+        });
     }
 
     public get currentFactionId(): string | null {

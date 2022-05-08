@@ -5,7 +5,7 @@ import { battleIdToColor } from "./battleUtils";
 import { supplyline } from "./mapInterfaces";
 
 interface SupplylineProps {
-    supplyline: supplyline;
+    supplylineId: string;
     warmapEventHandler: WarmapEventHandler;
 }
 
@@ -27,11 +27,12 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
 
     constructor(props: SupplylineProps) {
         super(props);
-        this.posx1 = props.supplyline.posx1;
-        this.posy1 = props.supplyline.posy1;
-        this.posx2 = props.supplyline.posx2;
-        this.posy2 = props.supplyline.posy2;
         this.warmapEventHandler = props.warmapEventHandler;
+        const supplyline = this.warmapEventHandler.supplylines.get(props.supplylineId);
+        this.posx1 = supplyline?.posx1 || 0;
+        this.posy1 = supplyline?.posy1 || 0;
+        this.posx2 = supplyline?.posx2 || 0;
+        this.posy2 = supplyline?.posy2 || 0;
     }
 
     statusCallback = (data: string) => {
@@ -52,13 +53,13 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
     };
 
     componentDidMount(): void {
-        this.warmapEventHandler.on(`supplyline${this.props.supplyline.id}`, this.statusCallback);
-        this.warmapEventHandler.on(`battlesetmapEntityId${this.props.supplyline.id}`, this.battleCallback);
+        this.warmapEventHandler.on(`supplyline${this.props.supplylineId}`, this.statusCallback);
+        this.warmapEventHandler.on(`battlesetmapEntityId${this.props.supplylineId}`, this.battleCallback);
     }
 
     componentWillUnmount(): void {
-        this.warmapEventHandler.removeListener(`supplyline${this.props.supplyline.id}`, this.statusCallback);
-        this.warmapEventHandler.removeListener(`battlesetmapEntityId${this.props.supplyline.id}`, this.battleCallback);
+        this.warmapEventHandler.removeListener(`supplyline${this.props.supplylineId}`, this.statusCallback);
+        this.warmapEventHandler.removeListener(`battlesetmapEntityId${this.props.supplylineId}`, this.battleCallback);
     }
 
     render() {
