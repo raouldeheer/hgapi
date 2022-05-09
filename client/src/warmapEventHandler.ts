@@ -74,66 +74,74 @@ export class WarmapEventHandler extends EventEmitter {
 
     public async loop() {
         console.log("Loop");
-        await this.getApi("/api/deletesupplylinestatus.json").then(deletesupplylinestatus => {
-            deletesupplylinestatus.forEach((e: string) => {
-                this.supplylinestatusMap.delete(e);
-                this.emit(`supplylinestatusdelete${e}`);
-            });
-        });
-
-        await Promise.all([
-            this.getApi("/api/factions.json").then(factions => {
-                factions.forEach((element: any) => {
-                    this.lookupFactions.set(element.factionId, element);
-                    this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
+        try {
+            await this.getApi("/api/deletesupplylinestatus.json").then(deletesupplylinestatus => {
+                deletesupplylinestatus.forEach((e: string) => {
+                    this.supplylinestatusMap.delete(e);
+                    this.emit(`supplylinestatusdelete${e}`);
                 });
-            }),
-            this.getApi("/api/battlefieldstatus.json").then(battlefieldstatus => {
-                for (let i = 0; i < battlefieldstatus.length; i += chunkSize) {
-                    const chunk = battlefieldstatus.slice(i, i + chunkSize);
-                    setTimeout(() => {
-                        chunk.forEach((element: any) => {
-                            if (!this.battlefieldstatusMap.has(element.id) ||
-                                this.battlefieldstatusMap.get(element.id)!.factionid !== element.factionid) {
-                                this.battlefieldstatusMap.set(element.id, element);
-                                this.emit(`battlefield${element.battlefieldid}`, element.id);
-                            }
-                        });
-                    }, 1);
-                }
-            }),
-            this.getApi("/api/supplylinestatus.json").then(supplylinestatus => {
-                for (let i = 0; i < supplylinestatus.length; i += chunkSize) {
-                    const chunk = supplylinestatus.slice(i, i + chunkSize);
-                    setTimeout(() => {
-                        chunk.forEach((element: any) => {
-                            if (!this.supplylinestatusMap.has(element.id)) {
-                                this.supplylinestatusMap.set(element.id, element);
-                                this.emit(`supplyline${element.supplylineid}`, element.id);
-                            }
-                        });
-                    }, 1);
-                }
-            }),
-        ]);
-
-        if (this.currentFaction) {
-            const newBattles = await this.getApi(`/api/factionbattles/${this.currentFaction}.json`) as battle[];
-
-            const newBattlesSet = new Set(newBattles.map(v => v.id));
-            this.battles.forEach(element => {
-                if (!newBattlesSet.has(element)) this.emit(`battledelete${element}`);
             });
-            this.battles = newBattlesSet;
 
-            newBattles.forEach(element => {
-                this.battlesMap.set(element.id, element);
-                this.emit(`battlesetmapEntityId${element.mapEntityId}`, element.id);
-            });
+            await Promise.all([
+                this.getApi("/api/factions.json").then(factions => {
+                    factions.forEach((element: any) => {
+                        this.lookupFactions.set(element.factionId, element);
+                        this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
+                    });
+                }),
+                this.getApi("/api/battlefieldstatus.json").then(battlefieldstatus => {
+                    for (let i = 0; i < battlefieldstatus.length; i += chunkSize) {
+                        const chunk = battlefieldstatus.slice(i, i + chunkSize);
+                        setTimeout(() => {
+                            chunk.forEach((element: any) => {
+                                if (!this.battlefieldstatusMap.has(element.id) ||
+                                    this.battlefieldstatusMap.get(element.id)!.factionid !== element.factionid) {
+                                    this.battlefieldstatusMap.set(element.id, element);
+                                    this.emit(`battlefield${element.battlefieldid}`, element.id);
+                                }
+                            });
+                        }, 1);
+                    }
+                }),
+                this.getApi("/api/supplylinestatus.json").then(supplylinestatus => {
+                    for (let i = 0; i < supplylinestatus.length; i += chunkSize) {
+                        const chunk = supplylinestatus.slice(i, i + chunkSize);
+                        setTimeout(() => {
+                            chunk.forEach((element: any) => {
+                                if (!this.supplylinestatusMap.has(element.id)) {
+                                    this.supplylinestatusMap.set(element.id, element);
+                                    this.emit(`supplyline${element.supplylineid}`, element.id);
+                                }
+                            });
+                        }, 1);
+                    }
+                }),
+            ]);
+
+            if (this.currentFaction) {
+                const newBattles = await this.getApi(`/api/factionbattles/${this.currentFaction}.json`) as battle[];
+
+                const newBattlesSet = new Set(newBattles.map(v => v.id));
+                this.battles.forEach(element => {
+                    if (!newBattlesSet.has(element)) this.emit(`battledelete${element}`);
+                });
+                this.battles = newBattlesSet;
+
+                newBattles.forEach(element => {
+                    this.battlesMap.set(element.id, element);
+                    this.emit(`battlesetmapEntityId${element.mapEntityId}`, element.id);
+                });
+            }
+
+            setTimeout(() => {
+                this.loop();
+            }, 5000);
+        } catch (error) {
+            console.error(error);
+            setTimeout(() => {
+                this.loop();
+            }, 60000);
         }
-        setTimeout(() => {
-            this.loop();
-        }, 5000);
     }
 
     public GetBattle = (battleId?: string): battle | undefined =>
