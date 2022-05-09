@@ -82,8 +82,10 @@ for (let x = 0; x < numberOfChunks; x++) {
         const index = (y * numberOfChunks) + x;
         if (bfsSectors[index] || supsSectors[index]) {
             sectors.push(index);
-            Json.saveS(`./bfsSectors/${index}.json`, bfsSectors[index] || []);
-            Json.saveS(`./supsSectors/${index}.json`, supsSectors[index] || []);
+            Json.saveS(`./sectors/${index}.json`, {
+                bfsSector: bfsSectors[index] || [],
+                supsSector: supsSectors[index] || [],
+            });
         }
     }
 }
