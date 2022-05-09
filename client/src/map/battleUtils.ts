@@ -45,6 +45,10 @@ export function battleIdToColor(
                     }, new Map());
                     if (!totalResources) return battleColor;
                     if (!battleIsFun(totalResources, battleType)) battleColor = "Aqua";
+                    if (battle?.MissionDetails?.factions?.reduce?.((prev, curr) => {
+                        if (warmapEventHandler.currentFactionId === curr.factionId) return prev;
+                        return prev + (curr?.players?.length || 0);
+                    }, 0) >= 4) battleColor = "Yellow";
                     break;
                 case MissionStatus.MissionRunning:
                     battleColor = "Orange";
