@@ -23,11 +23,12 @@ const MapSector = ({
 
     useEffect(() => {
         (async () => {
-            const [bfsSector, supsSector] = await Promise.all([
-                fetch(`/assets/bfsSectors/${index}.json`).then(value => value.json()).catch(() => []),
-                fetch(`/assets/supsSectors/${index}.json`).then(value => value.json()).catch(() => []),
-            ]);
-            setMapPoints({ bfsSector, supsSector });
+            try {
+                const data = await fetch(`/assets/sectors/${index}.json`).then(value => value.json())
+                setMapPoints(data);
+            } catch (error) {
+                console.error(error);
+            }
         })();
     }, [index]);
 
