@@ -53,12 +53,17 @@ export class WarmapEventHandler extends EventEmitter {
             ]);
         })();
 
-        window.addEventListener("load", () => {
+        const onloadEvent = () => {
             console.log("Page loaded!");
+            const loader = document.getElementById("loader");
+            loader?.classList.add("hidden");
             setTimeout(() => {
-                this.loop();
-            }, 500);
-        });
+                loader?.remove();
+                window.removeEventListener("load", onloadEvent);
+            }, 2000);
+            this.loop();
+        };
+        window.addEventListener("load", onloadEvent);
     }
 
     public get currentFactionId(): string | null {

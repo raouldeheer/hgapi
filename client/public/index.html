@@ -4,6 +4,40 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      #loader {
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10000;
+        background-color: #888;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+      }
+
+      .loaderCircle {
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .hidden {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 1.9s, opacity 1.9s linear;
+      }
+    </style>
     <meta name="theme-color" content="#888" />
     <meta
       name="description"
@@ -13,8 +47,11 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>HGWarmap</title>
   </head>
-  <body style="background-color: #888;">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+  <body style="background-color: #888; margin: 0;">
     <div id="root"></div>
+    <div id="loader">
+      <noscript>You need to enable JavaScript to run this app.</noscript>
+      <div class="loaderCircle"></div>
+    </div>
   </body>
 </html>
