@@ -36,8 +36,9 @@ export function battleIdToColor(
             switch (status) {
                 case MissionStatus.MissionOpen:
                     battleColor = "White";
+                    const currFaction = warmapEventHandler.currentFactionId;
                     const totalResources = battle?.MissionDetails?.armyResources?.reduce?.<Map<number, number>>((prev, curr) => {
-                        if (warmapEventHandler.currentFactionId !== curr.factionId) return prev;
+                        if (currFaction !== curr.factionId) return prev;
                         const CategoryId = Number(curr.armyResourceCategoryId);
                         const value = prev.get(CategoryId);
                         prev.set(CategoryId, value ? value + curr.count : curr.count);
@@ -45,10 +46,9 @@ export function battleIdToColor(
                     }, new Map());
                     if (!totalResources) return battleColor;
                     if (!battleIsFun(totalResources, battleType)) battleColor = "Aqua";
-                    if (battle?.MissionDetails?.factions?.reduce?.((prev, curr) => {
-                        if (warmapEventHandler.currentFactionId === curr.factionId) return prev;
-                        return prev + (curr?.players?.length || 0);
-                    }, 0) >= 4) battleColor = "Yellow";
+                    if (battle.MissionDetails.factions.reduce(
+                        (prev, curr) => prev + (currFaction !== curr.factionId ? curr?.players?.length : 0 || 0), 0
+                    ) >= 4) battleColor = "Yellow";
                     break;
                 case MissionStatus.MissionRunning:
                     battleColor = "Orange";
