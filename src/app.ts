@@ -45,12 +45,12 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
 
     app.get("/status", (_, res) => {
         res.set("Cache-control", "no-store");
-        res.sendStatus(client?.connected ? 200 : 500);
+        res.sendStatus(client?.connected ? 200 : 503);
     });
 
     app.get("/warmap.jpeg", async (_, res) => {
         if (!client) {
-            res.sendStatus(500);
+            res.sendStatus(503);
             return;
         }
         res.contentType("image/jpeg");

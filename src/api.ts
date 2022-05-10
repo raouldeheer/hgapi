@@ -96,7 +96,7 @@ export async function startAPI(
     const app = express();
     app.get("/battles", async (req, res) => {
         if (!client) {
-            res.sendStatus(500);
+            res.sendStatus(503);
             return;
         }
         res.set("Cache-control", "public, max-age=60");
@@ -119,7 +119,7 @@ export async function startAPI(
 
     app.get("/missiondetails", async (req, res) => {
         if (!client) {
-            res.sendStatus(500);
+            res.sendStatus(503);
             return;
         }
         res.set("Cache-control", "no-store");
@@ -253,7 +253,7 @@ export async function startAPI(
 
     app.get("/playerdetail", async (req, res) => {
         if (!client) {
-            res.sendStatus(500);
+            res.sendStatus(503);
             return;
         }
         res.set("Cache-control", "public, max-age=60");
@@ -308,7 +308,7 @@ export async function startAPI(
 
     app.get("/factionbattles/:id.json", async (req, res) => {
         if (!client) {
-            res.sendStatus(500);
+            res.sendStatus(503);
             return;
         }
         res.set("Cache-control", "public, max-age=5");
