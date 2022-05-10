@@ -3,6 +3,7 @@ import { ClassKeys, Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import Long from "long";
 import { Accesspoint, AccesspointTemplate, Battle, Battlefield, Faction, MapPoint, Supplyline } from "./interfaces";
+import { shortestRoute } from "./shortestRoute";
 
 const shortToId = new Map<string, string>([
     ["SU", "3"],
@@ -328,6 +329,8 @@ export async function startAPI(
         }
         res.sendStatus(412);
     });
+
+    app.get("/battlefieldroute", shortestRoute(expressDatastore, resolveTitle))
 
     return app;
 }
