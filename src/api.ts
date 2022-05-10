@@ -2,36 +2,10 @@ import express from "express";
 import { ClassKeys, Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import Long from "long";
-import { Accesspoint, AccesspointTemplate, Battle, Battlefield, Faction, MapPoint, Supplyline } from "./interfaces";
-import { shortestRoute } from "./shortestRoute";
-
-const shortToId = new Map<string, string>([
-    ["SU", "3"],
-    ["GE", "2"],
-    ["US", "1"],
-]);
-
-class CachedRequests<T, Y> {
-    private readonly cachedResults: Map<T, Y>;
-    constructor(
-        private readonly threshold: number,
-        private readonly action: (input: T) => Promise<Y>
-    ) {
-        this.cachedResults = new Map;
-    }
-    public async request(input: T): Promise<Y> {
-        if (this.cachedResults.has(input)) {
-            const result = this.cachedResults.get(input);
-            if (result) return result;
-        }
-        const outputResult = await this.action(input);
-        this.cachedResults.set(input, outputResult);
-        setTimeout(() => {
-            this.cachedResults.delete(input);
-        }, this.threshold * 1000);
-        return outputResult;
-    }
-}
+import { Battle, Battlefield, Faction, Supplyline } from "./interfaces";
+import { shortestRoute } from "./api/shortestRoute";
+import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
+import { frontendResources } from "./api/frontendResources";
 
 export async function startAPI(
     datastore: DataStore,
@@ -40,59 +14,8 @@ export async function startAPI(
     lookupTemplateFaction: Map<string, any>,
     client?: Client,
 ) {
-    const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
-        client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
-            missionId: 0,
-            battleId: Long.fromString(input),
-        }));
-
-    const resolveTitle = (bftitle: string): MapPoint => {
-        if (bftitle.includes(" - ")) {
-            const battlefield = Array.from(expressDatastore.GetItemStore<Battlefield>(KeyValueChangeKey.battlefield)?.values() || [])
-                .find(value => value.bftitle === bftitle.split(" - ")[0]);
-            if (!battlefield) throw 404;
-
-            const accesspoint = Array.from(expressDatastore.GetItemStore<Accesspoint>(KeyValueChangeKey.accesspoint)?.values() || [])
-                .find(value => {
-                    if (value.battlefield === battlefield.id) {
-                        const template = expressDatastore.GetData<AccesspointTemplate>(KeyValueChangeKey.accesspointtemplate, value.template);
-                        return bftitle === `${battlefield.bftitle} - ${template.abbr}`;
-                    }
-                    return false;
-                });
-            if (!accesspoint) throw 404;
-
-            const supplyline = Array.from(expressDatastore.GetItemStore<Supplyline>(KeyValueChangeKey.supplyline)?.values() || [])
-                .find(value => (value.accesspoint1Id === accesspoint.id) || (value.accesspoint2Id === accesspoint.id));
-            if (!supplyline) throw 404;
-            return supplyline;
-        } else {
-            const battlefield = Array.from(expressDatastore.GetItemStore<Battlefield>(KeyValueChangeKey.battlefield)?.values() || [])
-                .find(value => value.bftitle === bftitle);
-            if (!battlefield) throw 404;
-            return battlefield;
-        }
-    };
-
-    const toBFTitle = (id: string) => {
-        const result = expressDatastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id)?.bftitle;
-        if (result) return result;
-        const supplyline = expressDatastore.GetData<Supplyline>(KeyValueChangeKey.supplyline, id);
-        if (!supplyline) throw 404;
-        const ap1 = expressDatastore.GetData<Accesspoint>(KeyValueChangeKey.accesspoint, supplyline.accesspoint1Id);
-        if (!ap1) throw 404;
-        const ap2 = expressDatastore.GetData<Accesspoint>(KeyValueChangeKey.accesspoint, supplyline.accesspoint2Id);
-        if (!ap2) throw 404;
-        const apt1 = expressDatastore.GetData<AccesspointTemplate>(KeyValueChangeKey.accesspointtemplate, ap1.template);
-        if (!apt1) throw 404;
-        const apt2 = expressDatastore.GetData<AccesspointTemplate>(KeyValueChangeKey.accesspointtemplate, ap2.template);
-        if (!apt2) throw 404;
-        const apb1 = expressDatastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, ap1.battlefield);
-        if (!apb1) throw 404;
-        const apb2 = expressDatastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, ap2.battlefield);
-        if (!apb2) throw 404;
-        return `${apb1.bftitle} - ${apt1.abbr} or ${apb2.bftitle} - ${apt2.abbr}`;
-    };
+    const resolveTitle = getResolveTitle(expressDatastore);
+    const toBFTitle = getToBFTitle(expressDatastore);
 
     const app = express();
     app.get("/battles", async (req, res) => {
@@ -287,50 +210,9 @@ export async function startAPI(
         res.sendStatus(412);
     });
 
-    app.get("/supplylinestatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=10");
-        res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.supplylinestatus)?.values?.() || []));
-    });
+    frontendResources(app, datastore, lookupFactions, lookupTemplateFaction, client);
 
-    app.get("/battlefieldstatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=10");
-        res.json(Array.from(datastore.GetItemStore(KeyValueChangeKey.battlefieldstatus)?.values?.() || []));
-    });
-
-    app.get("/deletesupplylinestatus.json", (_, res) => {
-        res.set("Cache-control", "public, max-age=10");
-        res.json(Array.from(datastore.GetItemStore("deletesupplylinestatus")?.values?.() || []));
-    });
-
-    app.get("/factions.json", async (_, res) => {
-        res.set("Cache-control", "public, max-age=60");
-        res.json(Array.from(lookupFactions.values()));
-    });
-
-    app.get("/factionbattles/:id.json", async (req, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "public, max-age=5");
-        if (req.params.id) {
-            const id = shortToId.get(String(req.params.id));
-            if (id) {
-                res.json(await Promise.all(
-                    Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
-                        .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId)
-                        .map(async value => ({
-                            ...value,
-                            MissionDetails: await GetMissionDetailsCache.request(value.id),
-                        }))
-                ));
-                return;
-            }
-        }
-        res.sendStatus(412);
-    });
-
-    app.get("/battlefieldroute", shortestRoute(expressDatastore, resolveTitle))
+    app.get("/battlefieldroute", shortestRoute(expressDatastore));
 
     return app;
 }

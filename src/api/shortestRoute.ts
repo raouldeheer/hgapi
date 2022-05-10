@@ -1,9 +1,12 @@
 import { DijkstraCalculator } from 'dijkstra-calculator';
 import { DataStore } from "hagcp-utils";
 import { Request, Response } from "express";
-import { MapPoint } from './interfaces';
+import { MapPoint } from '../interfaces';
+import { getResolveTitle } from './battlefieldNaming';
 
-export function shortestRoute(datastore: DataStore, resolveTitle: (title: string) => MapPoint) {
+export function shortestRoute(datastore: DataStore) {
+    const resolveTitle = getResolveTitle(datastore);
+
     const graph = new DijkstraCalculator;
 
     // Add battlefields
