@@ -9,13 +9,15 @@ import { staticInfo } from "./api/staticInfo";
 export function startAPI(config: APIConfig) {
     const app = express();
 
-    [
+    const endpointComponents = [
         battles,
         staticInfo,
         frontendResources,
         player,
         shortestRoute,
-    ].forEach(ec => ec(app, config));
+    ];
+    
+    endpointComponents.forEach(ec => ec(app, config));
 
     return app;
 }

@@ -15,7 +15,7 @@ const datastore = new DataStore;
             process.exit(1);
         }, 60000)
     }
-    const app = await startApp(datastore, lookupFactions, expressPort, lookupTemplateFaction, client);
+    const app = await startApp(datastore, lookupFactions, lookupTemplateFaction, client);
 
     app.listen(expressPort, ip.address(), () => {
         console.log(`Listing on http://${ip.address()}:${expressPort}/`);

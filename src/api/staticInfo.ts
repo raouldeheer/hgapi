@@ -10,10 +10,9 @@ export function staticInfo(app: Express, config: APIConfig) {
         lookupFactions,
         expressDatastore,
         lookupTemplateFaction,
+        resolveTitle,
+        toBFTitle,
     } = config;
-
-    const resolveTitle = getResolveTitle(expressDatastore);
-    const toBFTitle = getToBFTitle(expressDatastore);
 
     app.get("/hostingcenter", async (req, res) => {
         res.set("Cache-control", "public, max-age=60");
@@ -113,12 +112,4 @@ export function staticInfo(app: Express, config: APIConfig) {
         }
         res.sendStatus(412);
     });
-
-
-
-
-
-
-
-
 }

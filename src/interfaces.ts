@@ -7,6 +7,8 @@ export interface APIConfig {
     expressDatastore: DataStore;
     lookupFactions: Map<string, any>;
     lookupTemplateFaction: Map<string, any>;
+    resolveTitle: (bftitle: string) => MapPoint;
+    toBFTitle: (id: string) => string;
 }
 
 export interface Battle {

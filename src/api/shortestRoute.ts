@@ -5,9 +5,10 @@ import { APIConfig } from '../interfaces';
 import { getResolveTitle } from './battlefieldNaming';
 
 export function shortestRoute(app: Express, config: APIConfig) {
-    const datastore = config.expressDatastore;
-
-    const resolveTitle = getResolveTitle(datastore);
+    const {
+        expressDatastore: datastore,
+        resolveTitle,
+    } = config;
 
     const graph = new DijkstraCalculator;
 

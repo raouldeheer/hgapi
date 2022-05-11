@@ -5,9 +5,7 @@ import Long from "long";
 import { APIConfig } from "../interfaces";
 
 export function player(app: Express, config: APIConfig) {
-    const {
-        client,
-    } = config;
+    const client = config.client;
 
     app.get("/playerdetail", async (req, res) => {
         if (!client) {

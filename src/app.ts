@@ -1,14 +1,15 @@
 import { Client } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
-import { drawToCanvas } from "hagcp-utils/canvas";
+import { drawToCanvas } from "hagcp-canvas";
 import { loadTemplate } from "hagcp-assets";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { startAPI } from "./api";
 import { cached } from "./cache/cachedItem";
+import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 
-export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, expressPort: number, lookupTemplateFaction: Map<string, any>, client?: Client) {
+export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const cachedBuffer = cached(60 * 15, async () => {
         const canvas = await drawToCanvas(expressDatastore, datastore, id => lookupFactions.get(id).color, lookupFactions);
         return canvas.toBuffer("image/jpeg");
@@ -46,7 +47,15 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         res.send(await cachedBuffer());
     });
 
-    app.use("/api", startAPI({ datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client }));
+    app.use("/api", startAPI({ 
+        datastore, 
+        lookupFactions, 
+        expressDatastore, 
+        lookupTemplateFaction, 
+        client, 
+        resolveTitle: getResolveTitle(expressDatastore),
+        toBFTitle: getToBFTitle(expressDatastore),
+     }));
 
     return app;
 }

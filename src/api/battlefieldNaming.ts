@@ -30,7 +30,7 @@ export const getResolveTitle = (datastore: DataStore) => (bftitle: string): MapP
     }
 };
 
-export const getToBFTitle = (datastore: DataStore) => (id: string) => {
+export const getToBFTitle = (datastore: DataStore) => (id: string): string => {
     const result = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id)?.bftitle;
     if (result) return result;
     const supplyline = datastore.GetData<Supplyline>(KeyValueChangeKey.supplyline, id);

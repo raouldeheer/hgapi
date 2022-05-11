@@ -14,9 +14,9 @@ const shortToId = new Map<string, string>([
 export function battles(app: Express, config: APIConfig) {
     const {
         datastore,
-        expressDatastore,
         lookupTemplateFaction,
-        client
+        client,
+        resolveTitle,
     } = config;
 
     const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
@@ -24,8 +24,6 @@ export function battles(app: Express, config: APIConfig) {
             missionId: 0,
             battleId: Long.fromString(input),
         }));
-    
-    const resolveTitle = getResolveTitle(expressDatastore);
 
     app.get("/battles", async (req, res) => {
         if (!client) {
