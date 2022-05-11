@@ -6,7 +6,7 @@ import { battles } from "./api/battles";
 import { player } from "./api/player";
 import { staticInfo } from "./api/staticInfo";
 
-export async function startAPI(config: APIConfig) {
+export function startAPI(config: APIConfig) {
     const app = express();
 
     [

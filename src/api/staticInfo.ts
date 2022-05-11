@@ -5,7 +5,6 @@ import { APIConfig, Battlefield, Faction, Supplyline } from "../interfaces";
 import { getResolveTitle, getToBFTitle } from "./battlefieldNaming";
 
 export function staticInfo(app: Express, config: APIConfig) {
-
     const {
         datastore,
         lookupFactions,

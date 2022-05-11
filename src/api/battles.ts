@@ -1,6 +1,7 @@
 import { Express } from "express";
 import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
 import Long from "long";
+import { CachedRequests } from "../cache/cachedRequests";
 import { APIConfig, Battle } from "../interfaces";
 import { getResolveTitle } from "./battlefieldNaming";
 
@@ -9,28 +10,6 @@ const shortToId = new Map<string, string>([
     ["GE", "2"],
     ["US", "1"],
 ]);
-
-class CachedRequests<T, Y> {
-    private readonly cachedResults: Map<T, Y>;
-    constructor(
-        private readonly threshold: number,
-        private readonly action: (input: T) => Promise<Y>
-    ) {
-        this.cachedResults = new Map;
-    }
-    public async request(input: T): Promise<Y> {
-        if (this.cachedResults.has(input)) {
-            const result = this.cachedResults.get(input);
-            if (result) return result;
-        }
-        const outputResult = await this.action(input);
-        this.cachedResults.set(input, outputResult);
-        setTimeout(() => {
-            this.cachedResults.delete(input);
-        }, this.threshold * 1000);
-        return outputResult;
-    }
-}
 
 export function battles(app: Express, config: APIConfig) {
     const {

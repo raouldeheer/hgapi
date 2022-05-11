@@ -6,19 +6,7 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { startAPI } from "./api";
-
-function cached<T>(threshold: number, action: () => Promise<T>): () => Promise<T> {
-    let cachedData: T | null;
-    return async () => {
-        if (!cachedData) {
-            cachedData = await action();
-            setTimeout(() => {
-                cachedData = null;
-            }, threshold * 1000);
-        }
-        return cachedData;
-    };
-}
+import { cached } from "./cache/cachedItem";
 
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, expressPort: number, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const cachedBuffer = cached(60 * 15, async () => {
@@ -58,7 +46,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         res.send(await cachedBuffer());
     });
 
-    app.use("/api", await startAPI({ datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client }));
+    app.use("/api", startAPI({ datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client }));
 
     return app;
 }
