@@ -17,8 +17,8 @@ export async function startAPI(config: APIConfig) {
     staticInfo(app, config);
     frontendResources(app, config);
     player(app, config);
-
-    app.get("/battlefieldroute", shortestRoute(expressDatastore));
+    shortestRoute(app, config);
+    
 
     return app;
 }

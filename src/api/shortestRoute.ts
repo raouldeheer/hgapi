@@ -1,10 +1,12 @@
+import { Express } from "express";
 import { DijkstraCalculator } from 'dijkstra-calculator';
-import { DataStore } from "hagcp-utils";
 import { Request, Response } from "express";
-import { MapPoint } from '../interfaces';
+import { APIConfig } from '../interfaces';
 import { getResolveTitle } from './battlefieldNaming';
 
-export function shortestRoute(datastore: DataStore) {
+export function shortestRoute(app: Express, config: APIConfig) {
+    const datastore = config.expressDatastore;
+
     const resolveTitle = getResolveTitle(datastore);
 
     const graph = new DijkstraCalculator;
@@ -31,7 +33,7 @@ export function shortestRoute(datastore: DataStore) {
             .reduce((prev, curr) => prev + curr, 0),
     });
 
-    return (req: Request, res: Response) => {
+    app.get("/battlefieldroute", (req: Request, res: Response) => {
         res.set("Cache-control", "public, max-age=300");
         if (req.query.id1 && req.query.id2) {
             const id1 = String(req.query.id1);
@@ -51,5 +53,5 @@ export function shortestRoute(datastore: DataStore) {
             return;
         }
         res.sendStatus(412);
-    };
+    });
 }
