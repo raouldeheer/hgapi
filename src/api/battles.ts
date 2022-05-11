@@ -1,0 +1,131 @@
+import { Express } from "express";
+import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
+import Long from "long";
+import { APIConfig, Battle } from "../interfaces";
+import { getResolveTitle } from "./battlefieldNaming";
+
+const shortToId = new Map<string, string>([
+    ["SU", "3"],
+    ["GE", "2"],
+    ["US", "1"],
+]);
+
+class CachedRequests<T, Y> {
+    private readonly cachedResults: Map<T, Y>;
+    constructor(
+        private readonly threshold: number,
+        private readonly action: (input: T) => Promise<Y>
+    ) {
+        this.cachedResults = new Map;
+    }
+    public async request(input: T): Promise<Y> {
+        if (this.cachedResults.has(input)) {
+            const result = this.cachedResults.get(input);
+            if (result) return result;
+        }
+        const outputResult = await this.action(input);
+        this.cachedResults.set(input, outputResult);
+        setTimeout(() => {
+            this.cachedResults.delete(input);
+        }, this.threshold * 1000);
+        return outputResult;
+    }
+}
+
+export function battles(app: Express, config: APIConfig) {
+    const {
+        datastore,
+        expressDatastore,
+        lookupTemplateFaction,
+        client
+    } = config;
+
+    const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
+        client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+            missionId: 0,
+            battleId: Long.fromString(input),
+        }));
+    
+    const resolveTitle = getResolveTitle(expressDatastore);
+
+    app.get("/battles", async (req, res) => {
+        if (!client) {
+            res.sendStatus(503);
+            return;
+        }
+        res.set("Cache-control", "public, max-age=60");
+        if (req.query.factionTemplateId) {
+            const factionTemplateId = String(req.query.factionTemplateId);
+            if (/^\d+$/.test(factionTemplateId)) {
+                res.json(await Promise.all(
+                    Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
+                        .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(factionTemplateId).factionId)
+                        .map(async value => ({
+                            ...value,
+                            MissionDetails: await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
+                        }))
+                ));
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
+
+    app.get("/missiondetails", async (req, res) => {
+        if (!client) {
+            res.sendStatus(503);
+            return;
+        }
+        res.set("Cache-control", "no-store");
+        if (req.query.bftitle) {
+            try {
+                const mapPoint = resolveTitle(String(req.query.bftitle));
+
+                const battle = Array.from(datastore.GetItemStore<Battle>(KeyValueChangeKey.battle)?.values() || [])
+                    .find(value => value.mapEntityId === mapPoint.id);
+                if (!battle) throw 404;
+
+                res.json(await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+                    missionId: 0,
+                    battleId: Long.fromString(battle.id),
+                }));
+            } catch (error) {
+                if (typeof error == "number") res.sendStatus(error);
+            }
+            return;
+        } else if (req.query.battleId) {
+            const battleId = String(req.query.battleId);
+            if (/^\d+$/.test(battleId)) {
+                res.json(await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+                    missionId: 0,
+                    battleId: Long.fromString(battleId),
+                }));
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
+
+    app.get("/factionbattles/:id.json", async (req, res) => {
+        if (!client) {
+            res.sendStatus(503);
+            return;
+        }
+        res.set("Cache-control", "public, max-age=5");
+        if (req.params.id) {
+            const id = shortToId.get(String(req.params.id));
+            if (id) {
+                res.json(await Promise.all(
+                    Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
+                        .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId)
+                        .map(async value => ({
+                            ...value,
+                            MissionDetails: await GetMissionDetailsCache.request(value.id),
+                        }))
+                ));
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
+}

@@ -1,3 +1,13 @@
+import { Client } from "hagcp-network-client";
+import { DataStore } from "hagcp-utils";
+
+export interface APIConfig {
+    client?: Client;
+    datastore: DataStore;
+    expressDatastore: DataStore;
+    lookupFactions: Map<string, any>;
+    lookupTemplateFaction: Map<string, any>;
+}
 
 export interface Battle {
     id: string;

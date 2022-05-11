@@ -58,7 +58,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         res.send(await cachedBuffer());
     });
 
-    app.use("/api", await startAPI(datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client));
+    app.use("/api", await startAPI({ datastore, lookupFactions, expressDatastore, lookupTemplateFaction, client }));
 
     return app;
 }
