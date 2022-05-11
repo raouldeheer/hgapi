@@ -18,7 +18,7 @@
     "dijkstra-calculator": "^1.0.8",
     "dotenv": "^16.0.0",
     "express": "^4.18.1",
-    "hagcp-assets": "^1.0.7",
+    "hagcp-assets": "^1.0.8",
     "hagcp-canvas": "^1.0.2",
     "hagcp-network-client": "^1.0.9",
     "hagcp-utils": "^1.0.7",
