@@ -7,18 +7,15 @@ import { player } from "./api/player";
 import { staticInfo } from "./api/staticInfo";
 
 export async function startAPI(config: APIConfig) {
-    const {
-        expressDatastore,
-    } = config;
-
     const app = express();
 
-    battles(app, config);
-    staticInfo(app, config);
-    frontendResources(app, config);
-    player(app, config);
-    shortestRoute(app, config);
-    
+    [
+        battles,
+        staticInfo,
+        frontendResources,
+        player,
+        shortestRoute,
+    ].forEach(ec => ec(app, config));
 
     return app;
 }
