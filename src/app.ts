@@ -5,6 +5,7 @@ import { loadTemplate } from "hagcp-assets";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
+import cors from "cors";
 import { startAPI } from "./api";
 import { cached } from "./cache/cachedItem";
 import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
@@ -26,6 +27,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.use(morgan("tiny"));
     app.use(express.urlencoded({ extended: true }));
     app.use(compression());
+    app.use(cors());
     app.use(express.static("client/build", {
         setHeaders: res => {
             res.set("Cache-control", "public, max-age=300");
