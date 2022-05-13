@@ -20,6 +20,8 @@ export class WarmapEventHandler extends EventEmitter {
     public readonly capitals: Set<string>;
     public readonly battlefields: Map<string, any>;
     public readonly supplylines: Map<string, any>;
+    private warid?: string;
+    private warmapWarChangeCallback?: Function;
 
     constructor() {
         super();
@@ -66,6 +68,10 @@ export class WarmapEventHandler extends EventEmitter {
         window.addEventListener("load", onloadEvent);
     }
 
+    public set WarmapChangeCallback(func: Function) {
+        this.warmapWarChangeCallback = func;
+    }
+
     public get currentFactionId(): string | null {
         if (!this.currentFaction) return null;
         const id = ShortToTemplateId.get(this.currentFaction);
@@ -95,6 +101,15 @@ export class WarmapEventHandler extends EventEmitter {
                     });
                 }),
                 this.getApi("/api/battlefieldstatus.json").then(battlefieldstatus => {
+                    const first = battlefieldstatus?.[0];
+                    if (first && first.warid !== this.warid) {
+                        this.warid = first.warid;
+                        this.lookupFactions.clear();
+                        this.lookupFactionsByTemplateId.clear();
+                        this.battlefieldstatusMap.clear();
+                        this.supplylinestatusMap.clear();
+                        if (this.warid) this.warmapWarChangeCallback?.(this.warid);
+                    }
                     for (let i = 0; i < battlefieldstatus.length; i += chunkSize) {
                         const chunk = battlefieldstatus.slice(i, i + chunkSize);
                         setTimeout(() => {
