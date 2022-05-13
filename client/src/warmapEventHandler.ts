@@ -103,11 +103,13 @@ export class WarmapEventHandler extends EventEmitter {
                 this.getApi("/api/battlefieldstatus.json").then(battlefieldstatus => {
                     const first = battlefieldstatus?.[0];
                     if (first && first.warid !== this.warid) {
+                        if (this.warid) {    
+                            this.lookupFactions.clear();
+                            this.lookupFactionsByTemplateId.clear();
+                            this.battlefieldstatusMap.clear();
+                            this.supplylinestatusMap.clear();
+                        }
                         this.warid = first.warid;
-                        this.lookupFactions.clear();
-                        this.lookupFactionsByTemplateId.clear();
-                        this.battlefieldstatusMap.clear();
-                        this.supplylinestatusMap.clear();
                         if (this.warid) this.warmapWarChangeCallback?.(this.warid);
                     }
                     for (let i = 0; i < battlefieldstatus.length; i += chunkSize) {

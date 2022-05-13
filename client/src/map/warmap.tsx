@@ -69,7 +69,7 @@ const Warmap = ({
                 scale: 0.10,
                 translation: { x: 0, y: 0, },
             }}>
-            <img key={warid} src={image} style={mapStyles} alt="background map" />
+            <img id={warid} src={image} style={mapStyles} alt="background map" />
             {sectors}
         </MapInteractionCSS>
         <Settings warmapEventHandler={warmapEventHandler} />
