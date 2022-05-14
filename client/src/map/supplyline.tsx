@@ -18,20 +18,11 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         battleId: undefined,
         supplylinestatusId: undefined,
     };
-    posx1: number;
-    posy1: number;
-    posx2: number;
-    posy2: number;
     warState: WarState;
 
     constructor(props: SupplylineProps) {
         super(props);
         this.warState = props.warState;
-        const supplyline = this.warState.supplylines.get(props.id);
-        this.posx1 = supplyline?.posx1 || 0;
-        this.posy1 = supplyline?.posy1 || 0;
-        this.posx2 = supplyline?.posx2 || 0;
-        this.posy2 = supplyline?.posy2 || 0;
     }
 
     statusCallback = (data: string) => {
@@ -62,6 +53,12 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
     }
 
     render() {
+        const supplyline = this.warState.supplylines.get(this.props.id);
+        const posx1 = supplyline?.posx1 || 0;
+        const posy1 = supplyline?.posy1 || 0;
+        const posx2 = supplyline?.posx2 || 0;
+        const posy2 = supplyline?.posy2 || 0;
+
         let color = "#888";
         if (this.state.supplylinestatusId) {
             const status = this.warState.supplylinestatusMap.get(this.state.supplylinestatusId);
@@ -73,18 +70,18 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         return <>
             <Line
                 points={[
-                    this.posx1,
-                    this.posy1,
-                    this.posx2,
-                    this.posy2
+                    posx1,
+                    posy1,
+                    posx2,
+                    posy2
                 ]}
                 stroke={color}
                 strokeWidth={8}
             />
             {battle ? <Circle
                 key={battle.id}
-                x={this.posx1 + (this.posx2 - this.posx1) * Number(battle.position)}
-                y={this.posy1 + (this.posy2 - this.posy1) * Number(battle.position)}
+                x={posx1 + (posx2 - posx1) * Number(battle.position)}
+                y={posy1 + (posy2 - posy1) * Number(battle.position)}
                 radius={10}
                 fill={battleIdToColor(this.warState, this.state.battleId, BattleType.Skirmish)}
             /> : null}

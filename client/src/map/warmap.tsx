@@ -7,8 +7,6 @@ import MapSector from "./mapSector";
 import sectorsToDraw from "../json/sectors.json";
 import Settings from "../settings";
 
-const sectorsToDrawSet = new Set(sectorsToDraw);
-
 const totalWidth = 16384;
 const totalHeight = 11520;
 
@@ -49,13 +47,14 @@ const Warmap = ({
     for (let x = 0; x < numberOfChunks; x++) {
         for (let y = 0; y < numberOfChunks; y++) {
             const index = (y * numberOfChunks) + x;
-            if (sectorsToDrawSet.has(index)) {
+            const sectorInList = sectorsToDraw.findIndex(v => v.index === index);
+            if (sectorInList !== -1) {
                 sectors.push(<MapSector
                     posx={baseWidth}
                     posy={baseHeight}
                     offsetx={baseWidth * x}
                     offsety={baseHeight * y}
-                    index={index}
+                    sectorData={sectorsToDraw[sectorInList]}
                     warState={warState}
                     key={index}
                 />);
