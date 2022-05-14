@@ -81,8 +81,8 @@ for (let x = 0; x < numberOfChunks; x++) {
     for (let y = 0; y < numberOfChunks; y++) {
         const index = (y * numberOfChunks) + x;
         if (bfsSectors[index] || supsSectors[index]) {
-            sectors.push(index);
-            Json.saveS(`./sectors/${index}.json`, {
+            sectors.push({
+                index,
                 bfsSector: bfsSectors[index] || [],
                 supsSector: supsSectors[index] || [],
             });
