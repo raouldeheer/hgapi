@@ -1,13 +1,19 @@
 import EventEmitter from "events";
 import { battle, battlefieldstatus, supplylinestatus } from "./map/mapInterfaces";
 import capital from "hagcp-assets/json/capital.json";
+import sectorsraw from "./json/sectors.json";
+
+const sectors = sectorsraw.map(v => ({
+    index: v.index,
+    battlefields: new Set(v.bfsSector),
+    supplylines: new Set(v.supsSector),
+}));
 
 const ShortToTemplateId = new Map([
     ["SU", "3"],
     ["GE", "2"],
     ["US", "1"],
 ]);
-const chunkSize = 1000;
 
 export class WarState extends EventEmitter {
     // Factions
@@ -54,7 +60,7 @@ export class WarState extends EventEmitter {
         this.battlefields = new Map();
         this.supplylines = new Map();
 
-        // Load battlefields and supplylines from api
+        // Load battlefields and supplylines from assets
         (async () => {
             await Promise.all([
                 fetch("/assets/battlefield.json").then(value => value.json()).then(battlefield => {
@@ -100,7 +106,7 @@ export class WarState extends EventEmitter {
      * @param endpoint http endpoint to call
      * @returns the returned json data
      */
-    private getApi = async (endpoint: string) => (await fetch(endpoint)).json();
+    private getApi = async <T = any>(endpoint: string): Promise<T> => (await fetch(endpoint)).json();
 
     /**
      * loop checks state of warmap in a loop
@@ -119,16 +125,16 @@ export class WarState extends EventEmitter {
             // Get most recent warmap data
             await Promise.all([
                 // Get all factions in this war
-                this.getApi("/api/factions.json").then(factions => {
-                    factions.forEach((element: any) => {
-                        this.lookupFactions.set(element.factionId, element);
-                        this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
-                    });
-                }),
-                // Get recent battlefield statuses
-                this.getApi("/api/battlefieldstatus.json").then(battlefieldstatus => {
+                this.getApi<any[]>("/api/factions.json").then(factions => factions.forEach(element => {
+                    this.lookupFactions.set(element.factionId, element);
+                    this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
+                })),
+                Promise.all([
+                    this.getApi<battlefieldstatus[]>("/api/battlefieldstatus.json"),
+                    this.getApi<supplylinestatus[]>("/api/supplylinestatus.json"),
+                ]).then(([bfstatus, supstatus]) => {
                     // Check if new war has started
-                    const first = battlefieldstatus?.[0];
+                    const first = bfstatus?.[0];
                     if (first && first.warid !== this.warid) {
                         if (this.warid) {
                             this.lookupFactions.clear();
@@ -139,11 +145,21 @@ export class WarState extends EventEmitter {
                         this.warid = first.warid;
                         if (this.warid) this.newWarCB?.(this.warid);
                     }
-                    // Update battlefields
-                    for (let i = 0; i < battlefieldstatus.length; i += chunkSize) {
-                        const chunk = battlefieldstatus.slice(i, i + chunkSize);
+                    // Update sectors
+                    sectors.map(sector => ({
+                        supplylinestatus: supstatus.filter(value => sector.supplylines.has(value.supplylineid)),
+                        battlefieldstatus: bfstatus.filter(value => sector.battlefields.has(value.battlefieldid)),
+                    })).forEach(chunk => {
                         setTimeout(() => {
-                            chunk.forEach((element: any) => {
+                            // Apply supplylinestatuses
+                            chunk.supplylinestatus.forEach(element => {
+                                if (!this.supplylinestatusMap.has(element.id)) {
+                                    this.supplylinestatusMap.set(element.id, element);
+                                    this.emit(`supplyline${element.supplylineid}`, element.id);
+                                }
+                            });
+                            // Apply battlefieldstatuses
+                            chunk.battlefieldstatus.forEach(element => {
                                 if (!this.battlefieldstatusMap.has(element.id) ||
                                     this.battlefieldstatusMap.get(element.id)!.factionid !== element.factionid) {
                                     this.battlefieldstatusMap.set(element.id, element);
@@ -151,23 +167,8 @@ export class WarState extends EventEmitter {
                                 }
                             });
                         }, 1);
-                    }
-                }),
-                // Get recent supplyline statuses
-                this.getApi("/api/supplylinestatus.json").then(supplylinestatus => {
-                    // Update supplylines
-                    for (let i = 0; i < supplylinestatus.length; i += chunkSize) {
-                        const chunk = supplylinestatus.slice(i, i + chunkSize);
-                        setTimeout(() => {
-                            chunk.forEach((element: any) => {
-                                if (!this.supplylinestatusMap.has(element.id)) {
-                                    this.supplylinestatusMap.set(element.id, element);
-                                    this.emit(`supplyline${element.supplylineid}`, element.id);
-                                }
-                            });
-                        }, 1);
-                    }
-                }),
+                    });
+                })
             ]);
 
             // Get battle information
