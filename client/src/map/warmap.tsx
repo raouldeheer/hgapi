@@ -2,7 +2,7 @@ import image from "hagcp-assets/images/background.png";
 // @ts-expect-error
 import { MapInteractionCSS } from "react-map-interaction";
 import React, { useState } from "react";
-import { WarmapEventHandler } from "../warmapEventHandler";
+import { WarState } from "../warmapEventHandler";
 import MapSector from "./mapSector";
 import sectorsToDraw from "../json/sectors.json";
 import Settings from "../settings";
@@ -38,13 +38,13 @@ const mapStyles: React.CSSProperties = {
 };
 
 const Warmap = ({
-    warmapEventHandler
+    warState
 }: {
-    warmapEventHandler: WarmapEventHandler;
+    warState: WarState;
 }): JSX.Element => {
     const [warid, setWarid] = useState("");
 
-    warmapEventHandler.WarmapChangeCallback = setWarid;
+    warState.WarmapChangeCallback = setWarid;
 
     const sectors = [];
     for (let x = 0; x < numberOfChunks; x++) {
@@ -57,7 +57,7 @@ const Warmap = ({
                     offsetx={baseWidth * x}
                     offsety={baseHeight * y}
                     index={index}
-                    warmapEventHandler={warmapEventHandler}
+                    warState={warState}
                     key={index}
                 />);
             }
@@ -73,7 +73,7 @@ const Warmap = ({
             <img id={warid} src={image} style={mapStyles} alt="background map" />
             {sectors}
         </MapInteractionCSS>
-        <Settings warmapEventHandler={warmapEventHandler} />
+        <Settings warState={warState} />
     </div>;
 };
 

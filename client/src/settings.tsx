@@ -1,5 +1,5 @@
 import React from "react";
-import { WarmapEventHandler } from "./warmapEventHandler";
+import { WarState } from "./warmapEventHandler";
 
 const posStyling: React.CSSProperties = {
     position: "absolute",
@@ -15,14 +15,14 @@ const componentStyling: React.CSSProperties = {
 };
 
 const Settings = ({
-    warmapEventHandler
+    warState
 }: {
-    warmapEventHandler: WarmapEventHandler;
+    warState: WarState;
 }): JSX.Element => {
     const onChange = (e: { target: { value: string; }; }) => {
         const value = e.target.value;
         if (value === "Select a faction") return;
-        warmapEventHandler.currentFaction = value;
+        warState.currentFaction = value;
         console.log(e.target.value);
     };
 

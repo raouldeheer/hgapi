@@ -1,11 +1,11 @@
 import { Component } from "react";
 import { Circle, Line } from "react-konva";
-import { WarmapEventHandler } from "../warmapEventHandler";
+import { WarState } from "../warmapEventHandler";
 import { battleIdToColor, BattleType } from "./battleUtils";
 
 interface SupplylineProps {
-    supplylineId: string;
-    warmapEventHandler: WarmapEventHandler;
+    id: string;
+    warState: WarState;
 }
 
 interface SupplylineState {
@@ -22,12 +22,12 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
     posy1: number;
     posx2: number;
     posy2: number;
-    warmapEventHandler: WarmapEventHandler;
+    warState: WarState;
 
     constructor(props: SupplylineProps) {
         super(props);
-        this.warmapEventHandler = props.warmapEventHandler;
-        const supplyline = this.warmapEventHandler.supplylines.get(props.supplylineId);
+        this.warState = props.warState;
+        const supplyline = this.warState.supplylines.get(props.id);
         this.posx1 = supplyline?.posx1 || 0;
         this.posy1 = supplyline?.posy1 || 0;
         this.posx2 = supplyline?.posx2 || 0;
@@ -36,7 +36,7 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
 
     statusCallback = (data: string) => {
         this.setState(state => ({ ...state, supplylinestatusId: data }));
-        this.warmapEventHandler.once(`supplylinestatusdelete${data}`, () => {
+        this.warState.once(`supplylinestatusdelete${data}`, () => {
             this.setState(state => ({ ...state, supplylinestatusId: undefined }));
         });
     };
@@ -47,28 +47,28 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
 
     battleCallback = (data: string) => {
         this.setState(state => ({ ...state, battleId: data }));
-        this.warmapEventHandler.removeListener(`battledelete${data}`, this.battleDeleteCallback);
-        this.warmapEventHandler.once(`battledelete${data}`, this.battleDeleteCallback);
+        this.warState.removeListener(`battledelete${data}`, this.battleDeleteCallback);
+        this.warState.once(`battledelete${data}`, this.battleDeleteCallback);
     };
 
     componentDidMount(): void {
-        this.warmapEventHandler.on(`supplyline${this.props.supplylineId}`, this.statusCallback);
-        this.warmapEventHandler.on(`battlesetmapEntityId${this.props.supplylineId}`, this.battleCallback);
+        this.warState.on(`supplyline${this.props.id}`, this.statusCallback);
+        this.warState.on(`battlesetmapEntityId${this.props.id}`, this.battleCallback);
     }
 
     componentWillUnmount(): void {
-        this.warmapEventHandler.removeListener(`supplyline${this.props.supplylineId}`, this.statusCallback);
-        this.warmapEventHandler.removeListener(`battlesetmapEntityId${this.props.supplylineId}`, this.battleCallback);
+        this.warState.removeListener(`supplyline${this.props.id}`, this.statusCallback);
+        this.warState.removeListener(`battlesetmapEntityId${this.props.id}`, this.battleCallback);
     }
 
     render() {
         let color = "#888";
         if (this.state.supplylinestatusId) {
-            const status = this.warmapEventHandler.supplylinestatusMap.get(this.state.supplylinestatusId);
-            if (status) color = this.warmapEventHandler.lookupFactions.get(status.factionid)?.color;
+            const status = this.warState.supplylinestatusMap.get(this.state.supplylinestatusId);
+            if (status) color = this.warState.lookupFactions.get(status.factionid)?.color;
         }
 
-        const battle = this.warmapEventHandler.GetBattle(this.state.battleId);
+        const battle = this.warState.GetBattle(this.state.battleId);
 
         return <>
             <Line
@@ -80,19 +80,13 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
                 ]}
                 stroke={color}
                 strokeWidth={8}
-                listening={false}
-                transformsEnabled={"position"}
-                perfectDrawEnabled={false}
             />
             {battle ? <Circle
                 key={battle.id}
                 x={this.posx1 + (this.posx2 - this.posx1) * Number(battle.position)}
                 y={this.posy1 + (this.posy2 - this.posy1) * Number(battle.position)}
                 radius={10}
-                fill={battleIdToColor(this.warmapEventHandler, this.state.battleId, BattleType.Skirmish)}
-                listening={false}
-                transformsEnabled={"position"}
-                perfectDrawEnabled={false}
+                fill={battleIdToColor(this.warState, this.state.battleId, BattleType.Skirmish)}
             /> : null}
         </>;
     }

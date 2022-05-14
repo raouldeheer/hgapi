@@ -9,7 +9,7 @@ const ShortToTemplateId = new Map([
 ]);
 const chunkSize = 1000;
 
-export class WarmapEventHandler extends EventEmitter {
+export class WarState extends EventEmitter {
     public readonly lookupFactions: Map<string, any>;
     public readonly lookupFactionsByTemplateId: Map<string, any>;
     public currentFaction: string | null;

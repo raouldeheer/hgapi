@@ -1,4 +1,4 @@
-import { WarmapEventHandler } from "../warmapEventHandler";
+import { WarState } from "../warmapEventHandler";
 import { MissionStatus } from "./mapInterfaces";
 
 const enum ResourceTypes {
@@ -37,7 +37,7 @@ const enum BattleColor {
 }
 
 export function battleIdToColor(
-    warmapEventHandler: WarmapEventHandler,
+    warmapEventHandler: WarState,
     battleId: string | undefined,
     battleType: BattleType,
     defaultColor?: string

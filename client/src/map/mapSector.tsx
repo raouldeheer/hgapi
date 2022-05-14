@@ -1,7 +1,7 @@
 import BattlefieldPoint from "./battlefieldPoint";
 import { Stage, Layer } from "react-konva";
 import Supplyline from "./supplyline";
-import { WarmapEventHandler } from "../warmapEventHandler";
+import { WarState } from "../warmapEventHandler";
 import { useEffect, useState } from "react";
 
 const MapSector = ({
@@ -10,26 +10,21 @@ const MapSector = ({
     offsetx,
     offsety,
     index,
-    warmapEventHandler,
+    warState,
 }: {
     posx: number;
     posy: number;
     offsetx: number;
     offsety: number;
     index: number;
-    warmapEventHandler: WarmapEventHandler;
+    warState: WarState;
 }): JSX.Element => {
     const [mapPoints, setMapPoints] = useState({ bfsSector: [], supsSector: [] });
 
     useEffect(() => {
-        (async () => {
-            try {
-                const data = await fetch(`/assets/sectors/${index}.json`).then(value => value.json())
-                setMapPoints(data);
-            } catch (error) {
-                console.error(error);
-            }
-        })();
+        try {
+            fetch(`/assets/sectors/${index}.json`).then(v => v.json()).then(setMapPoints);
+        } catch (err) { console.error(err); }
     }, [index]);
 
     return <Stage
@@ -48,16 +43,8 @@ const MapSector = ({
         listening={false}
     >
         <Layer listening={false}>
-            {mapPoints.supsSector.map(element => <Supplyline
-                key={element}
-                supplylineId={element}
-                warmapEventHandler={warmapEventHandler}
-            />)}
-            {mapPoints.bfsSector.map(element => <BattlefieldPoint
-                key={element}
-                battlefieldId={element}
-                warmapEventHandler={warmapEventHandler}
-            />)}
+            {mapPoints.supsSector.map(e => <Supplyline key={e} id={e} warState={warState} />)}
+            {mapPoints.bfsSector.map(e => <BattlefieldPoint key={e} id={e} warState={warState} />)}
         </Layer>
     </Stage>;
 };
