@@ -43,8 +43,7 @@ const Warmap = ({
     warState: WarState;
 }): JSX.Element => {
     const [warid, setWarid] = useState("");
-
-    warState.WarmapChangeCallback = setWarid;
+    warState.onNewWar = setWarid;
 
     const sectors = [];
     for (let x = 0; x < numberOfChunks; x++) {
