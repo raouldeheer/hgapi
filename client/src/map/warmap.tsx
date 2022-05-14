@@ -1,5 +1,6 @@
 import image from "hagcp-assets/images/background.png";
-import MapInteractionCSS from "./MapInteraction";
+// @ts-expect-error
+import { MapInteractionCSS } from "react-map-interaction";
 import React, { useState } from "react";
 import { WarmapEventHandler } from "../warmapEventHandler";
 import MapSector from "./mapSector";
