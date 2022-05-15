@@ -29,20 +29,27 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     await loadTemplate(expressDatastore, "accesspointtemplate");
     await loadTemplate(expressDatastore, "capital");
 
+    app.use((_, res, next) => {
+        res.setHeader("X-Powered-By", `hgwarmap ${version}`);
+        next();
+    });
+
     app.use(morgan("tiny"));
     app.use(express.urlencoded({ extended: true }));
     app.use(compression());
     app.use(cors());
     app.use(express.static("client/build", {
-        setHeaders: res => {
-            res.set("Cache-control", `public, max-age=${staticMaxAge}`);
-        }
-    }));
+        setHeaders: (res, path) => {
+            if (path.match(/\.(html)$/)) {
+                res.set("Cache-control", `public, max-age=${staticMaxAge}`);
+                return;
+            }
 
-    app.use((_, res, next) => {
-        res.setHeader("X-Powered-By", `hgwarmap ${version}`);
-        next();
-    });
+            if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|json)$/)) {
+                res.set("Cache-control", "public, max-age=604800, immutable");
+            }
+        },
+    }));
 
     app.get("/status", (_, res) => {
         res.set("Cache-control", "no-store");
