@@ -9,6 +9,7 @@ export interface APIConfig {
     lookupTemplateFaction: Map<string, any>;
     resolveTitle: (bftitle: string) => MapPoint;
     toBFTitle: (id: string) => string;
+    staticMaxAge: number;
 }
 
 export interface Battle {

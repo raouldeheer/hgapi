@@ -2,7 +2,6 @@
 import { Express } from "express";
 import { KeyValueChangeKey } from "hagcp-network-client";
 import { APIConfig, Battlefield, Faction, Supplyline } from "../interfaces";
-import { getResolveTitle, getToBFTitle } from "./battlefieldNaming";
 
 export function staticInfo(app: Express, config: APIConfig) {
     const {
@@ -15,7 +14,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     } = config;
 
     app.get("/hostingcenter", async (req, res) => {
-        res.set("Cache-control", "public, max-age=60");
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
         if (req.query.hostingCenterId) {
             const hostingCenterId = String(req.query.hostingCenterId);
             if (/^\d+$/.test(hostingCenterId)) {
@@ -27,7 +26,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
 
     app.get("/battlefield", async (req, res) => {
-        res.set("Cache-control", "public, max-age=60");
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {
@@ -52,7 +51,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
 
     app.get("/supplyline", async (req, res) => {
-        res.set("Cache-control", "public, max-age=60");
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {
@@ -69,7 +68,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
 
     app.get("/faction", async (req, res) => {
-        res.set("Cache-control", "public, max-age=60");
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
         if (req.query.factionId) {
             const factionId = String(req.query.factionId);
             if (/^\d+$/.test(factionId)) {
@@ -97,7 +96,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
 
     app.get("/bftitle", async (req, res) => {
-        res.set("Cache-control", "public, max-age=60");
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {

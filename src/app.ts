@@ -11,6 +11,8 @@ import { cached } from "./cache/cachedItem";
 import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 import Mylas from "mylas";
 
+const staticMaxAge = 300;
+
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const cachedBuffer = cached(60 * 15, async () => {
         const canvas = await drawToCanvas(expressDatastore, datastore, id => lookupFactions.get(id).color, lookupFactions);
@@ -33,7 +35,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.use(cors());
     app.use(express.static("client/build", {
         setHeaders: res => {
-            res.set("Cache-control", "public, max-age=300");
+            res.set("Cache-control", `public, max-age=${staticMaxAge}`);
         }
     }));
 
@@ -70,6 +72,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         client,
         resolveTitle: getResolveTitle(expressDatastore),
         toBFTitle: getToBFTitle(expressDatastore),
+        staticMaxAge,
     }));
 
     return app;
