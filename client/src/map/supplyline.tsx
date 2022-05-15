@@ -2,6 +2,7 @@ import { Component } from "react";
 import { Circle, Line } from "react-konva";
 import { WarState } from "../warmapEventHandler";
 import { battleIdToColor, BattleType } from "./battleUtils";
+import { supplyline } from "./mapInterfaces";
 
 interface SupplylineProps {
     id: string;
@@ -34,7 +35,7 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
 
     battleDeleteCallback = () => {
         this.setState(state => ({ ...state, battleId: undefined }));
-    }
+    };
 
     battleCallback = (data: string) => {
         this.setState(state => ({ ...state, battleId: data }));
@@ -53,7 +54,7 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
     }
 
     render() {
-        const supplyline = this.warState.supplylines.get(this.props.id);
+        const supplyline: supplyline = this.warState.supplylines.get(this.props.id);
         const posx1 = supplyline?.posx1 || 0;
         const posy1 = supplyline?.posy1 || 0;
         const posx2 = supplyline?.posx2 || 0;
@@ -68,16 +69,7 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         const battle = this.warState.GetBattle(this.state.battleId);
 
         return <>
-            <Line
-                points={[
-                    posx1,
-                    posy1,
-                    posx2,
-                    posy2
-                ]}
-                stroke={color}
-                strokeWidth={8}
-            />
+            <Line points={[posx1, posy1, posx2, posy2]} stroke={color} strokeWidth={8} />
             {battle ? <Circle
                 key={battle.id}
                 x={posx1 + (posx2 - posx1) * Number(battle.position)}

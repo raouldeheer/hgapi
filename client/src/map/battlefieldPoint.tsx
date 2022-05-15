@@ -2,6 +2,7 @@ import { Component } from "react";
 import { Circle, Text, Path, Star } from "react-konva";
 import { WarState } from "../warmapEventHandler";
 import { battleIdToColor, BattleType } from "./battleUtils";
+import { Battlefield } from "./mapInterfaces";
 
 interface BattlefieldProps {
     id: string;
@@ -51,7 +52,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
     }
 
     render() {
-        const battlefield = this.warState.battlefields.get(this.props.id);
+        const battlefield: Battlefield = this.warState.battlefields.get(this.props.id);
         const posx = battlefield?.posx || 0;
         const posy = battlefield?.posy || 0;
         const bftitle = battlefield?.bftitle || "";
@@ -92,11 +93,7 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
                 fill={battleIdToColor(this.warState, this.state.battleId, BattleType.Assault, color)}
             />
             {specialIcon}
-            <Text
-                text={bftitle}
-                x={posx}
-                y={posy + this.pointSize}
-            />
+            <Text text={bftitle} x={posx} y={posy + this.pointSize} />
         </>;
     }
 }

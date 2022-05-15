@@ -254,16 +254,13 @@ export const enum ResponseType {
     epic_call_failed = 279,
     voucher_expired = 280
 }
-export const enum VirtualCurrencyType {
-    Credits = 1,
-    Warfunds = 2,
-    Gold = 3
-}
+
 export const enum MissionStatus {
     MissionOpen = 1,
     MissionRunning = 2,
     MissionEnding = 3
 }
+
 export interface Battlefield {
     id: string;
     mapid: string;
@@ -312,40 +309,6 @@ export interface supplyline {
     posy1: number;
     posx2: number;
     posy2: number;
-}
-
-export type battleBattlefieldPair = { battle: battle, battlefield: Battlefield; };
-
-export interface war {
-    id: string;
-    name: string;
-    begintime: string;
-    endtime: string;
-    web: string;
-    friendlyfire: string;
-    winningfactionid: string;
-    pointsNeededForVictory: number;
-    automissionnormal: number;
-    automissionskirmish: number;
-    automissionsupply: number;
-    strategytimescale: number;
-    daycycletimescale: number;
-    disablestrategy: number;
-    maxPlayerPerFaction: number;
-    sequelwarid: string;
-    mapid: string;
-    cleanupStatus: number;
-    fowGridSize: number;
-    fowGridOriginX: number;
-    fowGridOriginY: number;
-    queueReinforcements: boolean;
-    firstResourceFree: boolean;
-    moraleMinValue: number;
-    moraleMaxValue: number;
-    moraleLostPerBattle: number;
-    moraleGainedPerWin: number;
-    moraleGainedPerMinute: number;
-    moraleSurrenderLimit: number;
 }
 
 export interface GetMissionDetailsResponse {
@@ -407,92 +370,4 @@ export interface MissionDetailsAccessPoint {
 export interface MissionDetailsCapturepointStatus {
     capturepointTemplateId: string;
     ownerFactionId: string;
-}
-
-export interface Armyresourcecategory {
-    id: string;
-    name: string;
-    actionid: number;
-    avgSize: number;
-    categoryBitfieldIndex: number;
-    speed: number;
-    maxDedicatedResources: number;
-    captureTransferMultiplierWar: number;
-    captureTransferMultiplierStaged: number;
-}
-
-export interface CommandNodeWarInstance {
-    id: string;
-    commandNodeDefinitionId: string;
-    parentCommandNodeInstanceId: string;
-    factionId: string;
-    mapEntityId: string;
-    mapEntityTypeId: string;
-    warId: string;
-    morale: number;
-    lastReset: string;
-    isDeployed: number;
-    hasGottenSoldierResourcesForFree: boolean;
-    hasGottenVehicleResourcesForFree: boolean;
-    maxMorale: number;
-    moraleGainModifier: number;
-}
-
-export interface CommandNodeDefinition {
-    id: string;
-    name: string;
-    abbreviation: string;
-    ownerPlayerId: string;
-    factionTemplateId: string;
-    commandNodeTemplateId: string;
-    rank: number;
-    supplyResourceCategoryId?: string;
-    generalCharacterId: string;
-    statUpdateTimeStamp: string;
-    suppliedOnCreation: boolean;
-}
-
-export interface Player {
-    id: string;
-    gamertag: string;
-    invertmouse: number;
-    invertmouseairplane: number;
-    mousesensitivity: number;
-    administrator: string;
-    mousecontrolledcars: number;
-    showcrosshair: number;
-    showcrosshairVehicles: number;
-    war: string;
-    factionid: string;
-    subscribedupto: string;
-    goldBought: string;
-    goldEarned: string;
-    goldUsed: string;
-    creditsBought: string;
-    creditsEarned: string;
-    creditsUsed: string;
-    firstActionGameDate: string;
-    numloginsFlash: number;
-    numloginsMobile: number;
-    language: string;
-    warfundsBought: string;
-    warfundsEarned: string;
-    warfundsUsed: string;
-    metricsUid?: string;
-    yellowGriefPoints: number;
-    redGriefPoints: number;
-    latestRedGriefPointTimestamp: string;
-    tier: number;
-    lastLogin: string;
-    tutorialsCompleted: number;
-    goldBoughtSteam: string;
-    skillLevel: number;
-    invertmouseturret: number;
-    totalScore: string;
-    unlockBits: boolean[];
-    level: number;
-    achievementsBits: boolean[];
-    isDeleted: boolean;
-    currencyCode: string;
-    currencyRegion: string;
 }
