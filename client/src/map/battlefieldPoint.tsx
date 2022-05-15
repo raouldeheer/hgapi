@@ -28,15 +28,15 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
     }
 
     statusCallback = (data: string) => {
-        this.setState(state => ({ ...state, battlefieldstatusId: data }));
+        this.setState({ battlefieldstatusId: data });
     };
 
     battleDeleteCallback = () => {
-        this.setState(state => ({ ...state, battleId: undefined }));
+        this.setState({ battleId: undefined });
     };
 
     battleCallback = (data: string) => {
-        this.setState(state => ({ ...state, battleId: data }));
+        this.setState({ battleId: data });
         this.warState.removeListener(`battledelete${data}`, this.battleDeleteCallback);
         this.warState.once(`battledelete${data}`, this.battleDeleteCallback);
     };
