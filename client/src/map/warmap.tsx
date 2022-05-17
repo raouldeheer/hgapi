@@ -1,4 +1,4 @@
-import image from "hagcp-assets/images/background.png";
+import image from "hagcp-assets/images/background.webp";
 // @ts-expect-error
 import { MapInteractionCSS } from "react-map-interaction";
 import React, { useState } from "react";

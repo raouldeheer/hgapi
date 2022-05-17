@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "events": "^3.3.0",
-    "hagcp-assets": "^1.0.7",
+    "hagcp-assets": "^1.0.9",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-konva": "^18.1.0",
