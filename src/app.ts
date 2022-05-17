@@ -1,4 +1,4 @@
-import { Client } from "hagcp-network-client";
+import { Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { drawToCanvas } from "hagcp-canvas";
 import { loadTemplate } from "hagcp-assets";
@@ -10,6 +10,7 @@ import { startAPI } from "./api";
 import { cached } from "./cache/cachedItem";
 import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 import Mylas from "mylas";
+import expressws from 'express-ws';
 
 const staticMaxAge = 300;
 
@@ -22,12 +23,13 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     console.log(`Loaded version ${version}`);
 
     const app = express();
+    expressws(app);
     const expressDatastore = new DataStore;
-    await loadTemplate(expressDatastore, "battlefield");
-    await loadTemplate(expressDatastore, "supplyline");
-    await loadTemplate(expressDatastore, "accesspoint");
-    await loadTemplate(expressDatastore, "accesspointtemplate");
-    await loadTemplate(expressDatastore, "capital");
+    await loadTemplate(expressDatastore, KeyValueChangeKey.battlefield);
+    await loadTemplate(expressDatastore, KeyValueChangeKey.supplyline);
+    await loadTemplate(expressDatastore, KeyValueChangeKey.accesspoint);
+    await loadTemplate(expressDatastore, KeyValueChangeKey.accesspointtemplate);
+    await loadTemplate(expressDatastore, KeyValueChangeKey.capital);
 
     app.use((_, res, next) => {
         res.setHeader("X-Powered-By", `hgwarmap ${version}`);

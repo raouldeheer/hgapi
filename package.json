@@ -19,6 +19,7 @@
     "dijkstra-calculator": "^1.0.8",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "express-ws": "^5.0.2",
     "hagcp-assets": "^1.0.8",
     "hagcp-canvas": "^1.0.2",
     "hagcp-network-client": "^1.0.10",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.12",
+    "@types/express-ws": "^3.0.1",
     "@types/ip": "^1.1.0",
     "@types/morgan": "^1.9.3",
     "typescript": "^4.7.0-dev.20220430"

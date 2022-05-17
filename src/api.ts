@@ -5,9 +5,11 @@ import { frontendResources } from "./api/frontendResources";
 import { battles } from "./api/battles";
 import { player } from "./api/player";
 import { staticInfo } from "./api/staticInfo";
+import expressws from 'express-ws';
 
 export function startAPI(config: APIConfig) {
     const app = express();
+    expressws(app);
 
     const endpointComponents = [
         battles,

@@ -46,6 +46,9 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
     componentDidMount(): void {
         this.warState.on(`supplyline${this.props.id}`, this.statusCallback);
         this.warState.on(`battlesetmapEntityId${this.props.id}`, this.battleCallback);
+        this.warState.once("loaded", () => {
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount(): void {

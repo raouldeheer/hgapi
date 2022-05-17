@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { WarState } from "./warmapEventHandler";
 
 const posStyling: React.CSSProperties = {
@@ -19,17 +19,27 @@ const Settings = ({
 }: {
     warState: WarState;
 }): JSX.Element => {
+    const [disabled, setDisabled] = useState(false);
+    const [status, setStatus] = useState<string | null>(null);
+
     const onChange = (e: { target: { value: string; }; }) => {
         const value = e.target.value;
         if (value === "Select a faction") return;
         warState.currentFaction = value;
         console.log(e.target.value);
+        setDisabled(true);
     };
+
+    useEffect(() => {
+        warState.OnlineCallback = (statusMsg: string) => {
+            setStatus(statusMsg);
+        };
+    }, [warState]);
 
     return <div style={componentStyling}>
         <h1>HGWarmap</h1>
         <h2>Settings</h2>
-        <select name="select" onChange={onChange}>
+        <select name="select" onChange={onChange} disabled={disabled}>
             <option>Select a faction</option>
             <option key={3}>SU</option>
             <option key={2}>GE</option>
@@ -43,6 +53,7 @@ const Settings = ({
             <li style={{ margin: 0, color: "Orange" }}>Battle running</li>
             <li style={{ margin: 0, color: "DarkRed" }}>Battle ending</li>
         </ul>
+        {status ? <h3>{status}</h3> : null}
     </div >;
 };
 
