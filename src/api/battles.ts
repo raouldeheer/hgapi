@@ -3,7 +3,6 @@ import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
 import Long from "long";
 import { CachedRequests } from "../cache/cachedRequests";
 import { APIConfig, Battle } from "../interfaces";
-import { getResolveTitle } from "./battlefieldNaming";
 
 const shortToId = new Map<string, string>([
     ["SU", "3"],
@@ -24,29 +23,6 @@ export function battles(app: Express, config: APIConfig) {
             missionId: 0,
             battleId: Long.fromString(input),
         }));
-
-    app.get("/battles", async (req, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "public, max-age=60");
-        if (req.query.factionTemplateId) {
-            const factionTemplateId = String(req.query.factionTemplateId);
-            if (/^\d+$/.test(factionTemplateId)) {
-                res.json(await Promise.all(
-                    Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
-                        .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(factionTemplateId).factionId)
-                        .map(async value => ({
-                            ...value,
-                            MissionDetails: await client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, { missionId: 0, battleId: Long.fromString(value.id) }),
-                        }))
-                ));
-                return;
-            }
-        }
-        res.sendStatus(412);
-    });
 
     app.get("/missiondetails", async (req, res) => {
         if (!client) {
@@ -85,6 +61,7 @@ export function battles(app: Express, config: APIConfig) {
 
     app.get("/factionbattles/:id.json", async (req, res) => {
         if (!client) {
+            res.set("Cache-control", "public, max-age=60");
             res.sendStatus(503);
             return;
         }
