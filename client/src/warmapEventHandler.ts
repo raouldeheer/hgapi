@@ -211,6 +211,10 @@ export class WarState extends EventEmitter {
                             this.lookupFactionsByTemplateId.clear();
                             this.battlefieldstatusMap.clear();
                             this.supplylinestatusMap.clear();
+                            fetch("/api/factions.json").then(value => value.json()).then(factions => factions.forEach((element: any) => {
+                                this.lookupFactions.set(element.factionId, element);
+                                this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
+                            }));
                         }
                         this.warid = element.value.id;
                         if (this.warid) this.newWarCB?.(this.warid);
