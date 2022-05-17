@@ -96,7 +96,7 @@ export class WarState extends EventEmitter {
             // Start update loop
             this.loop();
 
-            const socket = new WebSocket(`${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}/api/socket/mapstatus`);
+            const socket = new WebSocket(`${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}:${window.location.port}/api/socket/mapstatus`);
 
             socket.onopen = () => {
                 socket.send("start");
