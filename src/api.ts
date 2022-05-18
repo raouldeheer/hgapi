@@ -9,7 +9,7 @@ import expressws from 'express-ws';
 
 export function startAPI(config: APIConfig) {
     const app = express();
-    expressws(app);
+    expressws(app, undefined, { wsOptions: { perMessageDeflate: true, } });
 
     const endpointComponents = [
         battles,

@@ -23,7 +23,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     console.log(`Loaded version ${version}`);
 
     const app = express();
-    expressws(app);
+    expressws(app, undefined, { wsOptions: { perMessageDeflate: true, } });
     const expressDatastore = new DataStore;
     await loadTemplate(expressDatastore, KeyValueChangeKey.battlefield);
     await loadTemplate(expressDatastore, KeyValueChangeKey.supplyline);
