@@ -64,52 +64,63 @@ export class WarState extends EventEmitter {
         this.battlefields = new Map();
         this.supplylines = new Map();
 
-        // Load factions, battlefields and supplylines
-        (async () => {
+        const onloadEvent = async () => {
             await Promise.all([
+                // Load battlefields from assets
                 fetch("/assets/battlefield.json").then(value => value.json()).then(battlefield => {
                     battlefield.forEach((element: { id: string; }) => {
                         this.battlefields.set(element.id, element);
                     });
                 }),
+                // Load supplylines from assets
                 fetch("/assets/supplyline.json").then(value => value.json()).then(supplyline => {
                     supplyline.forEach((element: { id: string; }) => {
                         this.supplylines.set(element.id, element);
                     });
                 }),
+                // Load factions from api
                 fetch("/api/factions.json").then(value => value.json()).then(factions => factions.forEach((element: any) => {
                     this.lookupFactions.set(element.factionId, element);
                     this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
                 })),
             ]);
-        })();
 
-        const onloadEvent = () => {
+            // Emit page loaded
             this.emit("loaded");
             console.log("Page loaded!");
+
+            // Remove loader
             const loader = document.getElementById("loader");
             loader?.classList.add("hidden");
             setTimeout(() => {
                 loader?.remove();
                 window.removeEventListener("load", onloadEvent);
             }, 2000);
+
             // Start update loop
             this.loop();
 
-            const socket = new WebSocket(`${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}:${window.location.port}/api/socket/mapstatus`);
+            // start mapstatus socket
+            {
+                // Open socket
+                const socket = new WebSocket(`${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}:${window.location.port}/api/socket/mapstatus`);
 
-            socket.onopen = () => {
-                socket.send("start");
-            };
+                // Start receiving
+                socket.onopen = () => {
+                    socket.send("start");
+                };
 
-            socket.onmessage = e => {
-                const data: IKeyValueChangeSetResult = JSON.parse(e.data);
-                this.updateSectors(data);
-            };
+                // Handle incoming data
+                socket.onmessage = e => {
+                    const data: IKeyValueChangeSetResult = JSON.parse(e.data);
+                    this.updateSectors(data);
+                };
 
-            socket.onclose = e => {
-                console.log(e);
-                this.onlineCB?.("Lost connection to server");
+                // Handle errors and closing
+                socket.onclose = e => {
+                    console.log(e);
+                    this.onlineCB?.("Lost connection to server");
+                };
             }
         };
         window.addEventListener("load", onloadEvent);
