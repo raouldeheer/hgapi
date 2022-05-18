@@ -16,6 +16,8 @@ const ShortToTemplateId = new Map([
     ["US", "1"],
 ]);
 
+const websocketURL = `${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}:${window.location.port}`;
+
 export class WarState extends EventEmitter {
     // Factions
     public readonly lookupFactions: Map<string, any>;
@@ -23,7 +25,6 @@ export class WarState extends EventEmitter {
     private _currentFaction: string | null;
 
     // Battles
-    private battles: Set<string>;
     private readonly battlesMap: Map<string, battle>;
 
     // Statuses
@@ -52,7 +53,6 @@ export class WarState extends EventEmitter {
         this._currentFaction = null;
 
         // Battles
-        this.battles = new Set();
         this.battlesMap = new Map();
 
         // Statuses
@@ -97,13 +97,10 @@ export class WarState extends EventEmitter {
                 window.removeEventListener("load", onloadEvent);
             }, 2000);
 
-            // Start update loop
-            this.loop();
-
             // start mapstatus socket
             {
                 // Open socket
-                const socket = new WebSocket(`${(window.location.protocol === "https:" ? "wss:" : "ws:")}//${window.location.hostname}:${window.location.port}/api/socket/mapstatus`);
+                const socket = new WebSocket(`${websocketURL}/api/socket/mapstatus`);
 
                 // Start receiving
                 socket.onopen = () => {
@@ -128,6 +125,39 @@ export class WarState extends EventEmitter {
 
     public set currentFaction(value: string) {
         this._currentFaction = value;
+
+        // Open socket
+        const socket = new WebSocket(`${websocketURL}/api/socket/factionbattles`);
+
+        // Send faction name
+        socket.onopen = () => {
+            socket.send(value);
+        };
+
+        // Handle incoming data
+        socket.onmessage = e => {
+            const data: {
+                deletedBattles: string[],
+                changedBattles: battle[],
+            } = JSON.parse(e.data);
+
+            // Delete old battles
+            data.deletedBattles.forEach(element => {
+                this.emit(`battledelete${element}`);
+            });
+
+            // Set new battle information
+            data.changedBattles.forEach(element => {
+                this.battlesMap.set(element.id, element);
+                this.emit(`battlesetmapEntityId${element.mapEntityId}`, element.id);
+            });
+        };
+
+        // Handle errors and closing
+        socket.onclose = e => {
+            console.log(e);
+            this.onlineCB?.("Lost connection to server");
+        };
     }
 
     public set onNewWar(func: (warid: string) => void) {
@@ -143,52 +173,6 @@ export class WarState extends EventEmitter {
         const id = ShortToTemplateId.get(this._currentFaction);
         if (!id) return null;
         return this.lookupFactionsByTemplateId.get(id).factionId;
-    }
-
-    /**
-     * getApi fetches data from http api
-     * @param endpoint http endpoint to call
-     * @returns the returned json data
-     */
-    private getApi = async <T = any>(endpoint: string): Promise<T> => (await fetch(endpoint)).json();
-
-    /**
-     * loop checks state of warmap in a loop
-     */
-    public async loop() {
-        console.log("Loop");
-        try {
-            // Get battle information
-            if (this._currentFaction) {
-                const newBattles = await this.getApi(`/api/factionbattles/${this._currentFaction}.json`) as battle[];
-
-                // Make new set of battles
-                const newBattlesSet = new Set(newBattles.map(v => v.id));
-                // Delete battles that don't exist anymore
-                this.battles.forEach(element => {
-                    if (!newBattlesSet.has(element)) this.emit(`battledelete${element}`);
-                });
-                // Set battles to new battles
-                this.battles = newBattlesSet;
-
-                // Update all battles on the map
-                newBattles.forEach(element => {
-                    this.battlesMap.set(element.id, element);
-                    this.emit(`battlesetmapEntityId${element.mapEntityId}`, element.id);
-                });
-            }
-
-            // Succes next loop in 5 seconds
-            setTimeout(() => {
-                this.loop();
-            }, 5000);
-        } catch (error) {
-            console.error(error);
-            // Error next loop in 60 seconds
-            setTimeout(() => {
-                this.loop();
-            }, 60000);
-        }
     }
 
     /**
