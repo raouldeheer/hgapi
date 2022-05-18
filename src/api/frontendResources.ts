@@ -46,7 +46,7 @@ export function frontendResources(app: Express, config: APIConfig) {
                 (result.delete && result.delete?.length >= 1))
                 ws.send(JSON.stringify(result));
         };
-        ws.on("message", (msg: string) => {
+        ws.once("message", (msg: string) => {
             const data: IKeyValueChangeSetResult = {
                 set: [
                     ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
