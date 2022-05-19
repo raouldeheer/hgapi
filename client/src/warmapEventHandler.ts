@@ -98,34 +98,36 @@ export class WarState extends EventEmitter {
             }, 2000);
 
             // start mapstatus socket
-            {
-                // Open socket
-                const socket = new WebSocket(`${websocketURL}/api/socket/mapstatus`);
-
-                // Start receiving
-                socket.onopen = () => {
-                    socket.send("start");
-                };
-
-                // Handle incoming data
-                socket.onmessage = e => {
-                    const data: IKeyValueChangeSetResult = JSON.parse(e.data);
-                    this.updateSectors(data);
-                };
-
-                // Handle errors and closing
-                socket.onclose = e => {
-                    console.log(e);
-                    this.onlineCB?.("Lost connection to server");
-                };
-            }
+            this.connectToMapStatus();
         };
         window.addEventListener("load", onloadEvent);
     }
 
-    public set currentFaction(value: string) {
-        this._currentFaction = value;
+    private connectToMapStatus() {
+        // Open socket
+        const socket = new WebSocket(`${websocketURL}/api/socket/mapstatus`);
 
+        // Start receiving
+        socket.onopen = () => {
+            socket.send("start");
+        };
+
+        // Handle incoming data
+        socket.onmessage = e => {
+            const data: IKeyValueChangeSetResult = JSON.parse(e.data);
+            this.updateSectors(data);
+        };
+
+        // Handle errors and closing
+        socket.onclose = e => {
+            console.log(e);
+            setTimeout(() => {
+                this.connectToMapStatus();
+            }, 5000);
+        };
+    }
+
+    private connectToBattles(value: string) {
         // Open socket
         const socket = new WebSocket(`${websocketURL}/api/socket/factionbattles`);
 
@@ -156,8 +158,15 @@ export class WarState extends EventEmitter {
         // Handle errors and closing
         socket.onclose = e => {
             console.log(e);
-            this.onlineCB?.("Lost connection to server");
+            setTimeout(() => {
+                this.connectToBattles(value);
+            }, 5000);
         };
+    }
+
+    public set currentFaction(value: string) {
+        this._currentFaction = value;
+        this.connectToBattles(value);
     }
 
     public set onNewWar(func: (warid: string) => void) {
