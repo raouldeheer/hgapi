@@ -63,9 +63,8 @@ export function shortestRoute(app: Express, config: APIConfig) {
         const planeGraph = new DijkstraCalculator;
 
         // Add airfields
-        battlefields.forEach(element => {
-            if (element.gamemap === "204" || element.gamemap === "205")
-                planeGraph.addVertex(element.id);
+        airfields.forEach(element => {
+            planeGraph.addVertex(element.id);
         });
 
         // Add routes
