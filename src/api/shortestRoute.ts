@@ -72,7 +72,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
             for (const [key2, bf2] of airfields) {
                 if (key1 === key2) continue;
                 const distanceBetween = Math.hypot(bf2.posx - bf1.posx, bf2.posy - bf1.posy);
-                if (distanceBetween < (distance / 4)) planeGraph.addEdge(key1, key2, distanceBetween);
+                if (distanceBetween < distance) planeGraph.addEdge(key1, key2, distanceBetween);
             }
         }
 
