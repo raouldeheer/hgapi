@@ -49,6 +49,23 @@ export function staticInfo(app: Express, config: APIConfig) {
         }
         res.sendStatus(412);
     });
+    
+    app.get("/battlefield/:id.json", async (req, res) => {
+        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
+        if (req.params.id) {
+            const id = String(req.params.id);
+            if (/^\d+$/.test(id)) {
+                let result = expressDatastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id);
+                if (!result) {
+                    res.sendStatus(404);
+                    return;
+                }
+                res.json(result);
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
 
     app.get("/supplyline", async (req, res) => {
         res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
