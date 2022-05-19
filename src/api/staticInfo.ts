@@ -51,7 +51,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
     
     app.get("/battlefield/:id.json", async (req, res) => {
-        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
+        res.set("Cache-control", `public, max-age=86400`);
         if (req.params.id) {
             const id = String(req.params.id);
             if (/^\d+$/.test(id)) {
