@@ -56,7 +56,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
         res.sendStatus(412);
     });
 
-    const battlefields = datastore.GetItemStore<Battlefield>("battlefield") || [];
+    const battlefields = datastore.GetItemStore<Battlefield>("battlefield") || new Map;
     const airfields = new Map(Array.from(battlefields.values())
         .filter(element => element.gamemap === "204" || element.gamemap === "205")
         .map(e => ([e.id, e])));
@@ -135,7 +135,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
         if (req.query.id1 && req.query.id2) {
             const id1 = String(req.query.id1);
             const id2 = String(req.query.id2);
-            if (/^\d+$/.test(id1) && /^\d+$/.test(id2) && airfields.has(id1) && airfields.has(id2)) {
+            if (/^\d+$/.test(id1) && /^\d+$/.test(id2) && airfields.has(id1) && battlefields.has(id2)) {
                 res.json(getSeparation(id1, id2));
                 return;
             }
@@ -143,7 +143,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
             try {
                 const id1 = resolveTitle(String(req.query.bftitle1)).id;
                 const id2 = resolveTitle(String(req.query.bftitle2)).id;
-                if (airfields.has(id1) && airfields.has(id2)) {
+                if (airfields.has(id1) && battlefields.has(id2)) {
                     res.json(getSeparation(id1, id2));
                 } else {
                     res.sendStatus(412);
