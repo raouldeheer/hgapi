@@ -85,7 +85,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
         const bf2 = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id2);
         const distanceBetween = Math.hypot(bf2.posx - bf1.posx, bf2.posy - bf1.posy);
         return {
-            path: [bf1.bftitle, bf2.bftitle],
+            path: [id1, id2],
             distance: distanceBetween,
         };
     };
