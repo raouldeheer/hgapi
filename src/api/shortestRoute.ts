@@ -84,7 +84,10 @@ export function shortestRoute(app: Express, config: APIConfig) {
         const bf1 = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id1);
         const bf2 = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id2);
         const distanceBetween = Math.hypot(bf2.posx - bf1.posx, bf2.posy - bf1.posy);
-        return { separation: distanceBetween };
+        return {
+            path: [bf1.bftitle, bf2.bftitle],
+            distance: distanceBetween,
+        };
     };
 
     app.get("/planeroute", (req: Request, res: Response) => {
