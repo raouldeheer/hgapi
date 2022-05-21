@@ -2,6 +2,7 @@ import { Express } from "express";
 import { DijkstraCalculator } from "dijkstra-calculator";
 import { Request, Response } from "express";
 import { APIConfig, Battlefield } from "../interfaces";
+import { KeyValueChangeKey } from "hagcp-network-client";
 
 export function shortestRoute(app: Express, config: APIConfig) {
     const {
@@ -79,6 +80,13 @@ export function shortestRoute(app: Express, config: APIConfig) {
         return [distance, planeGraph];
     }));
 
+    const getSeparation = (id1: string, id2: string) => {
+        const bf1 = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id1);
+        const bf2 = datastore.GetData<Battlefield>(KeyValueChangeKey.battlefield, id2);
+        const distanceBetween = Math.hypot(bf2.posx - bf1.posx, bf2.posy - bf1.posy);
+        return { separation: distanceBetween };
+    };
+
     app.get("/planeroute", (req: Request, res: Response) => {
         res.set("Cache-control", "public, max-age=300");
         if (req.query.distance) {
@@ -115,6 +123,32 @@ export function shortestRoute(app: Express, config: APIConfig) {
                     return;
                 }
             }
+        }
+        res.sendStatus(412);
+    });
+
+    app.get("/battlefieldseparation", (req: Request, res: Response) => {
+        res.set("Cache-control", "public, max-age=300");
+        if (req.query.id1 && req.query.id2) {
+            const id1 = String(req.query.id1);
+            const id2 = String(req.query.id2);
+            if (/^\d+$/.test(id1) && /^\d+$/.test(id2) && airfields.has(id1) && airfields.has(id2)) {
+                res.json(getSeparation(id1, id2));
+                return;
+            }
+        } else if (req.query.bftitle1, req.query.bftitle2) {
+            try {
+                const id1 = resolveTitle(String(req.query.bftitle1)).id;
+                const id2 = resolveTitle(String(req.query.bftitle2)).id;
+                if (airfields.has(id1) && airfields.has(id2)) {
+                    res.json(getSeparation(id1, id2));
+                } else {
+                    res.sendStatus(412);
+                }
+            } catch (error) {
+                if (typeof error == "number") res.sendStatus(error);
+            }
+            return;
         }
         res.sendStatus(412);
     });
