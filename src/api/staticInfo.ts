@@ -1,14 +1,12 @@
 
 import { Express } from "express";
 import { KeyValueChangeKey } from "hagcp-network-client";
-import { APIConfig, Battlefield, Faction, Supplyline } from "../interfaces";
+import { APIConfig, Battlefield, Supplyline } from "../interfaces";
 
 export function staticInfo(app: Express, config: APIConfig) {
     const {
         datastore,
-        lookupFactions,
         expressDatastore,
-        lookupTemplateFaction,
         resolveTitle,
         toBFTitle,
     } = config;
@@ -51,7 +49,7 @@ export function staticInfo(app: Express, config: APIConfig) {
     });
     
     app.get("/battlefield/:id.json", async (req, res) => {
-        res.set("Cache-control", `public, max-age=86400`);
+        res.set("Cache-control", `public, max-age=2592000`);
         if (req.params.id) {
             const id = String(req.params.id);
             if (/^\d+$/.test(id)) {
@@ -78,34 +76,6 @@ export function staticInfo(app: Express, config: APIConfig) {
                     return;
                 }
                 res.json(result);
-                return;
-            }
-        }
-        res.sendStatus(412);
-    });
-
-    app.get("/faction", async (req, res) => {
-        res.set("Cache-control", `public, max-age=${config.staticMaxAge}`);
-        if (req.query.factionId) {
-            const factionId = String(req.query.factionId);
-            if (/^\d+$/.test(factionId)) {
-                const faction: Faction = lookupFactions.get(factionId);
-                if (!faction) {
-                    res.sendStatus(404);
-                    return;
-                }
-                res.json(faction);
-                return;
-            }
-        } else if (req.query.factionTemplateId) {
-            const factionTemplateId = String(req.query.factionTemplateId);
-            if (/^\d+$/.test(factionTemplateId)) {
-                const faction: Faction = lookupTemplateFaction.get(factionTemplateId);
-                if (!faction) {
-                    res.sendStatus(404);
-                    return;
-                }
-                res.json(faction);
                 return;
             }
         }

@@ -2,7 +2,7 @@ import { Express } from "express";
 import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
 import Long from "long";
 import { CachedRequests } from "../cache/cachedRequests";
-import { APIConfig, Battle } from "../interfaces";
+import { APIConfig, Battle, Faction } from "../interfaces";
 import ws from "ws";
 import { createHash } from "crypto";
 
@@ -15,6 +15,7 @@ const shortToId = new Map<string, string>([
 export function battles(app: Express, config: APIConfig) {
     const {
         datastore,
+        lookupFactions,
         lookupTemplateFaction,
         client,
         resolveTitle,
@@ -25,6 +26,34 @@ export function battles(app: Express, config: APIConfig) {
             missionId: 0,
             battleId: Long.fromString(input),
         }));
+
+    app.get("/faction", async (req, res) => {
+        res.set("Cache-control", "public, max-age=86400");
+        if (req.query.factionId) {
+            const factionId = String(req.query.factionId);
+            if (/^\d+$/.test(factionId)) {
+                const faction: Faction = lookupFactions.get(factionId);
+                if (!faction) {
+                    res.sendStatus(404);
+                    return;
+                }
+                res.json(faction);
+                return;
+            }
+        } else if (req.query.factionTemplateId) {
+            const factionTemplateId = String(req.query.factionTemplateId);
+            if (/^\d+$/.test(factionTemplateId)) {
+                const faction: Faction = lookupTemplateFaction.get(factionTemplateId);
+                if (!faction) {
+                    res.sendStatus(404);
+                    return;
+                }
+                res.json(faction);
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
 
     app.get("/missiondetails", async (req, res) => {
         if (!client) {

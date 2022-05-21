@@ -12,7 +12,7 @@ import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 import Mylas from "mylas";
 import expressws from 'express-ws';
 
-const staticMaxAge = 300;
+const staticMaxAge = 2592000;
 
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const cachedBuffer = cached(60 * 15, async () => {
@@ -43,12 +43,12 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.use(express.static("client/build", {
         setHeaders: (res, path) => {
             if (path.match(/\.(html)$/)) {
-                res.set("Cache-control", `public, max-age=${staticMaxAge}`);
+                res.set("Cache-control", "public, max-age=86400");
                 return;
             }
 
             if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|json)$/)) {
-                res.set("Cache-control", "public, max-age=604800, immutable");
+                res.set("Cache-control", "public, max-age=2592000, immutable");
             }
         },
     }));
