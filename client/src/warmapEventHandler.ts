@@ -192,7 +192,7 @@ export class WarState extends EventEmitter {
     public GetBattle = (battleId?: string): battle | undefined =>
         battleId ? this.battlesMap.get(battleId) : undefined;
 
-    public updateSectors(data: IKeyValueChangeSetResult) {
+    public async updateSectors(data: IKeyValueChangeSetResult) {
         if (data?.delete) {
             data.delete.forEach(element => {
                 if (element.key === "supplylinestatus") {
@@ -204,7 +204,7 @@ export class WarState extends EventEmitter {
         if (data?.set) {
             const supstatus: supplylinestatus[] = [];
             const bfstatus: battlefieldstatus[] = [];
-            data.set.forEach(element => {
+            for (const element of data.set) {
                 if (element.key === "supplylinestatus") supstatus.push(element.value);
                 if (element.key === "battlefieldstatus") bfstatus.push(element.value);
                 if (element.key === "war") {
@@ -215,7 +215,7 @@ export class WarState extends EventEmitter {
                             this.lookupFactionsByTemplateId.clear();
                             this.battlefieldstatusMap.clear();
                             this.supplylinestatusMap.clear();
-                            fetch("/api/factions.json").then(value => value.json()).then(factions => factions.forEach((element: any) => {
+                            await fetch("/api/factions.json").then(value => value.json()).then(factions => factions.forEach((element: any) => {
                                 this.lookupFactions.set(element.factionId, element);
                                 this.lookupFactionsByTemplateId.set(element.factionTemplateId, element);
                             }));
@@ -224,7 +224,7 @@ export class WarState extends EventEmitter {
                         if (this.warid) this.newWarCB?.(this.warid);
                     }
                 }
-            });
+            }
 
             // Update sectors
             sectors.map(sector => ({
