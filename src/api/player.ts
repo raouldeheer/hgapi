@@ -1,8 +1,8 @@
 
 import { Express } from "express";
-import { ClassKeys } from "hagcp-network-client";
+import { ClassKeys, ResponseType } from "hagcp-network-client";
 import Long from "long";
-import { APIConfig } from "../interfaces";
+import { APIConfig, SearchPlayerDetailResponse } from "../interfaces";
 
 export function player(app: Express, config: APIConfig) {
     const client = config.client;
@@ -16,13 +16,18 @@ export function player(app: Express, config: APIConfig) {
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {
-                const gamertag = (await client!.sendPacketAsync<{ gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
+                const gamertag = (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
                     playerId: Long.fromString(id)
                 })).gamertag;
                 if (gamertag) {
-                    res.json(await client!.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
+                    const result = await client!.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
                         playerGamerTag: gamertag
-                    }));
+                    });
+                    if (result.response === ResponseType.player_not_found) {
+                        res.sendStatus(404);
+                        return;
+                    }
+                    res.json(result);
                     return;
                 }
                 res.sendStatus(404);
@@ -34,9 +39,14 @@ export function player(app: Express, config: APIConfig) {
                 res.sendStatus(418); //! This should never happen!
                 return;
             }
-            res.json(await client!.sendPacketAsync(ClassKeys.SearchPlayerDetailRequest, {
+            const result = await client!.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
                 playerGamerTag: gamertag
-            }));
+            });
+            if (result.response === ResponseType.player_not_found) {
+                res.sendStatus(404);
+                return;
+            }
+            res.json(result);
             return;
         }
         res.sendStatus(412);

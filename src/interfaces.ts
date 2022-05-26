@@ -1,4 +1,4 @@
-import { Client } from "hagcp-network-client";
+import { Client, ResponseType } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 
 export interface APIConfig {
@@ -80,4 +80,12 @@ export interface Faction {
     tanksLost: number;
     planesLost: number;
     ownedMajorCities: string[];
+}
+
+export interface SearchPlayerDetailResponse {
+    response: ResponseType;
+    playerId?: string;
+    gamertag?: string;
+    factiontemplateid?: string;
+    warName?: string;
 }
