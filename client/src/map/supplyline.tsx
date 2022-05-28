@@ -63,6 +63,9 @@ export default class Supplyline extends Component<SupplylineProps, SupplylineSta
         const posx2 = supplyline?.posx2 || 0;
         const posy2 = supplyline?.posy2 || 0;
 
+        if (this.state.battleId && !this.warState.activeBattles.has(this.state.battleId))
+            this.battleDeleteCallback();
+
         let color = "#888";
         if (this.state.supplylinestatusId) {
             const status = this.warState.supplylinestatusMap.get(this.state.supplylinestatusId);

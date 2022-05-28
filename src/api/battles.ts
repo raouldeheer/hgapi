@@ -126,14 +126,15 @@ export function battles(app: Express, config: APIConfig) {
                     const loop = async () => {
                         const deletedBattles: string[] = [];
                         const changedBattles: BattleResult[] = [];
+                        const currentBattles = Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
+                            .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId);
+                        const activeBattles = currentBattles.map(value => value.id);
 
                         const newBattles: BattleResult[] = await Promise.all(
-                            Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
-                                .filter(e => e.excludedFactionId !== lookupTemplateFaction.get(id).factionId)
-                                .map(async value => ({
-                                    ...value,
-                                    MissionDetails: await GetMissionDetailsCache.request(value.id),
-                                }))
+                            currentBattles.map(async value => ({
+                                ...value,
+                                MissionDetails: await GetMissionDetailsCache.request(value.id),
+                            }))
                         );
 
                         // Make new set of battles
@@ -160,6 +161,7 @@ export function battles(app: Express, config: APIConfig) {
                             ws.send(JSON.stringify({
                                 deletedBattles,
                                 changedBattles,
+                                activeBattles,
                             }));
                         }
                     };

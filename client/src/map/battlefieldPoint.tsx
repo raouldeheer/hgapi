@@ -61,6 +61,8 @@ export default class BattlefieldPoint extends Component<BattlefieldProps, Battle
         const bftitle = battlefield?.bftitle || "";
         const gamemap = battlefield?.gamemap || "";
 
+        if (this.state.battleId && !this.warState.activeBattles.has(this.state.battleId))
+            this.battleDeleteCallback();
 
         let color = "#888";
         if (this.state.battlefieldstatusId) {

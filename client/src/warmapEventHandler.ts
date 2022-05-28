@@ -39,6 +39,7 @@ export class WarState extends EventEmitter {
     // War
     private warid?: string;
     private newWarCB?: (warid: string) => void;
+    public activeBattles: Set<string>;
 
     // Online
     private onlineCB?: (status: string) => void;
@@ -63,6 +64,9 @@ export class WarState extends EventEmitter {
         this.capitals = new Set(capital.map(e => e.battlefieldId));
         this.battlefields = new Map();
         this.supplylines = new Map();
+
+        // War
+        this.activeBattles = new Set();
 
         const onloadEvent = async () => {
             await Promise.all([
@@ -141,7 +145,13 @@ export class WarState extends EventEmitter {
             const data: {
                 deletedBattles: string[],
                 changedBattles: battle[],
+                activeBattles: string[],
             } = JSON.parse(e.data);
+
+            this.activeBattles.clear();
+            data.activeBattles.forEach(element => {
+                this.activeBattles.add(element);
+            });
 
             // Delete old battles
             data.deletedBattles.forEach(element => {
