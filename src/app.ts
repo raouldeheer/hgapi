@@ -15,10 +15,6 @@ import expressws from 'express-ws';
 const staticMaxAge = 2592000;
 
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
-    const cachedBuffer = cached(60 * 15, async () => {
-        const canvas = await drawToCanvas(expressDatastore, datastore, id => lookupFactions.get(id).color, lookupFactions);
-        return canvas.toBuffer("image/jpeg");
-    });
     const { version } = await Mylas.json.load("package.json");
     console.log(`Loaded version ${version}`);
 
@@ -32,7 +28,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     await loadTemplate(expressDatastore, KeyValueChangeKey.capital);
 
     app.use((_, res, next) => {
-        res.setHeader("X-Powered-By", `hgwarmap ${version}`);
+        res.setHeader("X-Powered-By", `hgapi ${version}`);
         next();
     });
 
@@ -61,16 +57,6 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.get("/version", (_, res) => {
         res.set("Cache-control", "no-store");
         res.send(version);
-    });
-
-    app.get("/warmap.jpeg", async (_, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.contentType("image/jpeg");
-        res.set("Cache-control", "public, max-age=60");
-        res.send(await cachedBuffer());
     });
 
     app.use("/api", startAPI({
