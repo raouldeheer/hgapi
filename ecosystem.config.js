@@ -4,7 +4,7 @@ dotenv.config({ path: path.join("/etc", "hgwarmap.env")});
 
 module.exports = {
     apps: [{
-        name: "hgwarmap",
+        name: "hgapi",
         script: "./dist/index.js",
         env: {
             NODE_ENV: "production",
@@ -20,7 +20,7 @@ module.exports = {
                 "192.168.3.104"
             ],
             ref: "origin/main",
-            repo: "git@github.com:raouldeheer/hgwarmap.git",
+            repo: "git@github.com:raouldeheer/hgapi.git",
             path: "/mnt/apps/hgwarmap",
             "post-deploy": "npm run post-deploy && pm2 startOrRestart ecosystem.config.js --env production",
         },
