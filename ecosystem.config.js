@@ -21,7 +21,7 @@ module.exports = {
             ],
             ref: "origin/main",
             repo: "git@github.com:raouldeheer/hgapi.git",
-            path: "/mnt/apps/hgwarmap",
+            path: "/mnt/apps/hgapi",
             "post-deploy": "npm run post-deploy && pm2 startOrRestart ecosystem.config.js --env production",
         },
     },

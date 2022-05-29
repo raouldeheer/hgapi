@@ -40,10 +40,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/raouldeheer/hgwarmap.git"
+    "url": "git+https://github.com/raouldeheer/hgapi.git"
   },
   "bugs": {
-    "url": "https://github.com/raouldeheer/hgwarmap/issues"
+    "url": "https://github.com/raouldeheer/hgapi/issues"
   },
-  "homepage": "https://github.com/raouldeheer/hgwarmap#readme"
+  "homepage": "https://github.com/raouldeheer/hgapi#readme"
 }
