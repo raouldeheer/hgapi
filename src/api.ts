@@ -6,6 +6,7 @@ import { battles } from "./api/battles";
 import { player } from "./api/player";
 import { staticInfo } from "./api/staticInfo";
 import expressws from 'express-ws';
+import { warmap } from "./api/warmap";
 
 export function startAPI(config: APIConfig) {
     const app = express();
@@ -17,6 +18,7 @@ export function startAPI(config: APIConfig) {
         frontendResources,
         player,
         shortestRoute,
+        warmap,
     ];
     
     endpointComponents.forEach(ec => ec(app, config));

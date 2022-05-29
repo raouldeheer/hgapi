@@ -89,3 +89,24 @@ export interface SearchPlayerDetailResponse {
     factiontemplateid?: string;
     warName?: string;
 }
+
+export interface mapentitystatus {
+    id: string;
+    warid: string;
+    factionid: string;
+    mapEntityId: string;
+}
+
+export interface supplylinestatus {
+    id: string;
+    warid: string;
+    factionid: string;
+    supplylineid: string;
+}
+
+export interface battlefieldstatus {
+    id: string;
+    warid: string;
+    battlefieldid: string;
+    factionid: string;
+}
