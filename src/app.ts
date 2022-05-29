@@ -1,13 +1,11 @@
 import { Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
-import { drawToCanvas } from "hagcp-canvas";
 import { loadTemplate } from "hagcp-assets";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import cors from "cors";
 import { startAPI } from "./api";
-import { cached } from "./cache/cachedItem";
 import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 import Mylas from "mylas";
 import expressws from 'express-ws';
@@ -36,18 +34,6 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.use(express.urlencoded({ extended: true }));
     app.use(compression());
     app.use(cors());
-    app.use(express.static("client/build", {
-        setHeaders: (res, path) => {
-            if (path.match(/\.(html)$/)) {
-                res.set("Cache-control", "public, max-age=86400");
-                return;
-            }
-
-            if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|json)$/)) {
-                res.set("Cache-control", "public, max-age=2592000, immutable");
-            }
-        },
-    }));
 
     app.get("/status", (_, res) => {
         res.set("Cache-control", "no-store");

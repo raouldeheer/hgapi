@@ -8,7 +8,7 @@
     "dev:build": "tsc -w",
     "start": "node dist/index.js",
     "dev:start": "nodemon dist/index.js",
-    "post-deploy": "npm install && (tsc && (cd client && (npm install && npm run build)))",
+    "post-deploy": "npm install && tsc",
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "author": "Raoul de Heer",
@@ -21,7 +21,6 @@
     "express": "^4.18.1",
     "express-ws": "^5.0.2",
     "hagcp-assets": "^1.0.9",
-    "hagcp-canvas": "^1.0.2",
     "hagcp-network-client": "^1.1.3",
     "hagcp-utils": "^1.0.8",
     "ip": "^1.1.8",
