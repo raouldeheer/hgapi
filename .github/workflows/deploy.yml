@@ -15,6 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: npm ci
-      - run: git status
+      - run: git checkout main
       - name: Run deploy
         run: pm2 deploy production
