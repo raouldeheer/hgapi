@@ -14,8 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: "main"
       - run: npm ci
-      - run: git checkout main
-      - run: git branch
       - name: Run deploy
         run: pm2 deploy production
