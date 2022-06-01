@@ -14,10 +14,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - run: npm ci
-      - run: git branch
       - run: git checkout main
       - run: git branch
       - name: Run deploy
