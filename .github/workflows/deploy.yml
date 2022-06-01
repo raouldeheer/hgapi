@@ -14,8 +14,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: git reset --hard     
-      - run: git clean -fxd   
       - run: npm i
+      - run: git status
       - name: Run deploy
         run: pm2 deploy production
