@@ -4,12 +4,9 @@
 name: Deploy
 
 on:
-  create:
-      tags: "*"
-  # push:
-  #   branches: [main, dev]
-  # pull_request:
-  #   branches: [main, dev]
+  push:
+    tags:
+      - "*"
 
 jobs:
   build:
