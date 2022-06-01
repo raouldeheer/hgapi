@@ -15,6 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: npm ci
-      - run: git switch ${{ github.ref }}
+      - run: git branch
       - name: Run deploy
         run: pm2 deploy production
