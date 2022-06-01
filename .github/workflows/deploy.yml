@@ -14,8 +14,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with: 
-          ref: ${{ github.event.push.head.ref }}
+        with:
+          fetch-depth: 2
+      - run: git checkout HEAD^
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3.0.0
         with:
