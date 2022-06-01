@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - run: npm ci
       - run: git branch
-      - run: git checkout HEAD^
+      - run: git checkout HEAD
       - run: git branch
       - name: Run deploy
         run: pm2 deploy production
