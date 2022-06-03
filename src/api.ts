@@ -20,8 +20,16 @@ export function startAPI(config: APIConfig) {
         shortestRoute,
         warmap,
     ];
-    
+
     endpointComponents.forEach(ec => ec(app, config));
+
+    setInterval(() => {
+        let total = "Websockets:";
+        for (const iterator of config.websockets) {
+            total += `\n${iterator[0]} (${iterator[1].size}): ${Array.from(iterator[1].values()).join(",")}`;
+        }
+        console.log(total);
+    }, 30000);
 
     return app;
 }

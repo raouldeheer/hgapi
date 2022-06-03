@@ -2,6 +2,7 @@ import { Express } from "express";
 import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
 import { IKeyValueChangeSetResult } from "hagcp-utils";
 import { APIConfig } from "../interfaces";
+import { v4 } from "uuid";
 
 export function frontendResources(app: Express, config: APIConfig) {
     const {
@@ -30,8 +31,13 @@ export function frontendResources(app: Express, config: APIConfig) {
         res.json(Array.from(lookupFactions.values()));
     });
 
+    config.websockets.set("/socket/mapstatus", new Set);
     // @ts-expect-error
     app.ws("/socket/mapstatus", (ws: ws, req: Request) => {
+        const uuid = v4();
+        console.log(`/socket/mapstatus/ <> ${uuid}`);
+        const startTime = Date.now();
+        config.websockets.get("/socket/mapstatus")?.add(uuid);
         const watcher = (data: IKeyValueChangeSetResult) => {
             const result = {
                 set: data.set?.filter(value =>
@@ -58,7 +64,8 @@ export function frontendResources(app: Express, config: APIConfig) {
             client?.on(ClassKeys.KeyValueChangeSet, watcher);
         });
         ws.on("close", () => {
-            console.log("WebSocket was closed");
+            config.websockets.get("/socket/mapstatus")?.delete(uuid);
+            console.log(`WebSocket was closed after ${Math.floor((startTime - Date.now()) / 1000)} seconds <> ${uuid}`);
             client?.removeListener(ClassKeys.KeyValueChangeSet, watcher);
         });
     });

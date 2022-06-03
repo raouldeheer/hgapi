@@ -5,6 +5,7 @@ import { CachedRequests } from "../cache/cachedRequests";
 import { APIConfig, Battle, Faction } from "../interfaces";
 import ws from "ws";
 import { createHash } from "crypto";
+import { v4 } from "uuid";
 
 const shortToId = new Map<string, string>([
     ["SU", "3"],
@@ -114,12 +115,16 @@ export function battles(app: Express, config: APIConfig) {
         res.sendStatus(412);
     });
 
+    config.websockets.set("/socket/factionbattles", new Set);
     // @ts-expect-error
     app.ws("/socket/factionbattles", (ws: ws, req: express.Request) => {
         let interval: NodeJS.Timer | undefined;
+        const startTime = Date.now();
+        const uuid = v4();
+        config.websockets.get("/socket/factionbattles")?.add(uuid);
         ws.once("message", async (msg: string) => {
             if (msg && typeof msg === "string") {
-                console.log("/socket/factionbattles/" + msg);
+                console.log(`/socket/factionbattles/ ${msg} <> ${uuid}`);
                 const id = shortToId.get(msg);
                 if (id) {
                     let battles: Map<string, BattleResult> = new Map;
@@ -177,7 +182,8 @@ export function battles(app: Express, config: APIConfig) {
             }
         });
         ws.on("close", () => {
-            console.log("WebSocket was closed");
+            config.websockets.get("/socket/factionbattles")?.delete(uuid);
+            console.log(`WebSocket was closed after ${Math.floor((startTime - Date.now()) / 1000)} seconds <> ${uuid}`);
             if (interval) clearInterval(interval);
         });
     });

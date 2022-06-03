@@ -54,6 +54,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         resolveTitle: getResolveTitle(expressDatastore),
         toBFTitle: getToBFTitle(expressDatastore),
         staticMaxAge,
+        websockets: new Map,
     }));
 
     return app;

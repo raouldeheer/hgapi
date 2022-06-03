@@ -10,6 +10,7 @@ export interface APIConfig {
     resolveTitle: (bftitle: string) => MapPoint;
     toBFTitle: (id: string) => string;
     staticMaxAge: number;
+    websockets: Map<string, Set<string>>;
 }
 
 export interface Battle {
