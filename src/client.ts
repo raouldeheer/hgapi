@@ -21,6 +21,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         if (warId) {
             if (!client) return;
             await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
+            const queryServerInfo = await client.sendPacketAsync(ClassKeys.QueryServerInfo);
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
@@ -34,6 +35,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
 
             mylas.json.saveS(`${outDir}/${warId}/${date}.jsonc`, {
                 factions: Array.from(lookupFactions.values()),
+                queryServerInfo,
             });
         }
     }
