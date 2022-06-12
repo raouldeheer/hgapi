@@ -13,7 +13,7 @@ import expressws from 'express-ws';
 const staticMaxAge = 2592000;
 
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
-    const { version } = await Mylas.json.load("package.json");
+    const { version } = await Mylas.json.load("./package.json");
     console.log(`Loaded version ${version}`);
 
     const app = express();
