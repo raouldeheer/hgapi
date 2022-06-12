@@ -13,8 +13,16 @@ const datastore = new DataStore;
     if (!client) {
         setTimeout(() => {
             process.exit(1);
-        }, 60000)
+        }, 60000);
     }
+
+    setInterval(() => {
+        if (!client?.connected) {
+            console.error("Lost connection");
+            process.exit(1);
+        }
+    }, 120000);
+
     const app = await startApp(datastore, lookupFactions, lookupTemplateFaction, client);
 
     app.listen(expressPort, ip.address(), () => {
