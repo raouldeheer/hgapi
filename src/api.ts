@@ -4,6 +4,7 @@ import { shortestRoute } from "./api/shortestRoute";
 import { frontendResources } from "./api/frontendResources";
 import { battles } from "./api/battles";
 import { player } from "./api/player";
+import { serverLoad } from "./api/serverLoad";
 import { staticInfo } from "./api/staticInfo";
 import expressws from 'express-ws';
 import { warmap } from "./api/warmap";
@@ -17,6 +18,7 @@ export function startAPI(config: APIConfig) {
         staticInfo,
         frontendResources,
         player,
+        serverLoad,
         shortestRoute,
         warmap,
     ];

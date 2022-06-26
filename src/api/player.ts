@@ -1,4 +1,3 @@
-
 import { Express } from "express";
 import { ClassKeys, ResponseType } from "hagcp-network-client";
 import Long from "long";
