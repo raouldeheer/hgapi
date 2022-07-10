@@ -111,3 +111,25 @@ export interface battlefieldstatus {
     battlefieldid: string;
     factionid: string;
 }
+
+export interface War {
+    name:                   string;
+    factions:               WarFaction[];
+    resources:              Resource[];
+    totalSkirmishMissions:  number;
+    activeSkirmishMissions: number;
+    totalAssaulthMissions:  number;
+    activeAssaultMissions:  number;
+}
+
+export interface WarFaction {
+    factionTemplateId: string;
+    playersOnline:     number;
+}
+
+export interface Resource {
+    factionTemplateId:      string;
+    armyResourceCategoryId: string;
+    count:                  string;
+    hq:                     boolean;
+}
