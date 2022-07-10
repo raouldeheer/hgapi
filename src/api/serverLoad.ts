@@ -83,7 +83,7 @@ export function serverLoad(app: Express, config: APIConfig) {
                 ]));
             });
 
-            data.wars[0].resources.filter(item => !item.hq).forEach(item => {
+            data.wars[0].resources.filter(item => item.hq).forEach(item => {
                 const resourceMap = idToCount.get(item.armyResourceCategoryId);
                 if (resourceMap) resourceMap.set(item.factionTemplateId, Number.parseInt(item.count));
             });
