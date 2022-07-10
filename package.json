@@ -1,7 +1,7 @@
 {
   "name": "hagcp-warmap-api",
   "description": "",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
