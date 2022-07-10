@@ -92,9 +92,9 @@ export function serverLoad(app: Express, config: APIConfig) {
             for (const [categoryId, categoryName] of idToName) {
                 const categoryObj = {};
                 const categoryCounts = idToCount.get(categoryId) || new Map;
-                Reflect.set(categoryObj, "US", categoryCounts.get("1"));
-                Reflect.set(categoryObj, "GE", categoryCounts.get("2"));
-                Reflect.set(categoryObj, "SU", categoryCounts.get("3"));
+                Reflect.set(categoryObj, "US", categoryCounts.get("1") || 0);
+                Reflect.set(categoryObj, "GE", categoryCounts.get("2") || 0);
+                Reflect.set(categoryObj, "SU", categoryCounts.get("3") || 0);
                 Reflect.set(result, categoryName, categoryObj);
             }
             res.json(result);
