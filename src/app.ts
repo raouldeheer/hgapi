@@ -1,6 +1,7 @@
 import { Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { loadTemplate } from "hagcp-assets";
+import { drawToCanvas } from "hagcp-canvas";
 import express from "express";
 import compression from "compression";
 import morgan from "morgan";
@@ -12,9 +13,27 @@ import expressws from 'express-ws';
 
 const staticMaxAge = 2592000;
 
+function cached<T>(threshold: number, action: () => Promise<T>): () => Promise<T> {
+    let cachedData: T | null;
+    return async () => {
+        if (!cachedData) {
+            cachedData = await action();
+            setTimeout(() => {
+                cachedData = null;
+            }, threshold * 1000);
+        }
+        return cachedData;
+    };
+}
+
 export async function startApp(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>, client?: Client) {
     const { version } = await Mylas.json.load("./package.json");
     console.log(`Loaded version ${version}`);
+
+    const cachedBuffer = cached(60 * 15, async () => {
+        const canvas = await drawToCanvas(expressDatastore, datastore, id => lookupFactions.get(id).color, lookupFactions);
+        return canvas.toBuffer("image/jpeg");
+    });
 
     const app = express();
     expressws(app, undefined, { wsOptions: { perMessageDeflate: true, } });
@@ -43,6 +62,13 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
     app.get("/version", (_, res) => {
         res.set("Cache-control", "no-store");
         res.send(version);
+    });
+
+    app.get("/warmap.jpeg", async (_, res) => {
+        if (!client) res.sendStatus(500);
+        res.contentType("image/jpeg");
+        res.set("Cache-control", "public, max-age=60");
+        res.send(await cachedBuffer());
     });
 
     app.use("/api", startAPI({
