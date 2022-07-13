@@ -20,7 +20,7 @@ export function player(app: Express, config: APIConfig) {
         res.set("Cache-control", "public, max-age=60");
         if (req.query.id) {
             const id = String(req.query.id);
-            if (/^\d+$/.test(id)) {
+            if (/^\-\d+$/.test(id)) {
                 const gamertag = (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
                     playerId: Long.fromString(id)
                 })).gamertag;
