@@ -12,6 +12,10 @@ export function player(app: Express, config: APIConfig) {
         lookupTemplateFaction,
     } = config;
 
+    const idToGamertag = async (id: string) => (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
+        playerId: Long.fromString(id)
+    })).gamertag;
+
     app.get("/playerdetail", async (req, res) => {
         if (!client) {
             res.sendStatus(503);
@@ -21,9 +25,7 @@ export function player(app: Express, config: APIConfig) {
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\-\d+$/.test(id)) {
-                const gamertag = (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
-                    playerId: Long.fromString(id)
-                })).gamertag;
+                const gamertag = await idToGamertag(id);
                 if (gamertag) {
                     const result = await client!.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
                         playerGamerTag: gamertag
@@ -81,9 +83,9 @@ export function player(app: Express, config: APIConfig) {
                 addPlayer(team.factionId, team.ownerPlayerId);
             });
         });
-        type playerPlaces = { player: string, amount: number; }[];
+        type playerPlaces = { playerId: string, playerName: string, amount: number; }[];
 
-        const getTop10 = (): playerPlaces => {
+        const getTop10 = async (): Promise<playerPlaces> => {
             let top10: [string, number][] = [];
             let top10Min = 0;
             for (const player of playerList) {
@@ -91,25 +93,25 @@ export function player(app: Express, config: APIConfig) {
                     top10.push(player);
                     top10 = top10.sort((a, b) => b[1] - a[1]);
                     if (top10.length >= 10) top10.pop();
-                    top10Min = top10[top10.length-1][1];
+                    top10Min = top10[top10.length - 1][1];
                 }
             }
-            return top10.map(v => ({player: v[0], amount: v[1]}));
+            return await Promise.all(top10.map(async v => ({ playerId: v[0], playerName: await idToGamertag(v[0]), amount: v[1] })));
         };
-        const getTop10Faction = (faction: string): playerPlaces => {
+        const getTop10Faction = async (faction: string): Promise<playerPlaces> => {
             let top10: [string, number][] = [];
             let top10Min = 0;
             const list = factionList.get(faction) || new Set;
-            const factionPlayerList = Array.from(playerList.entries()).filter(player => list.has(player[0]))
-            for (const player of factionPlayerList) {                
+            const factionPlayerList = Array.from(playerList.entries()).filter(player => list.has(player[0]));
+            for (const player of factionPlayerList) {
                 if (player[1] >= top10Min || top10.length < 10) {
                     top10.push(player);
                     top10 = top10.sort((a, b) => b[1] - a[1]);
                     if (top10.length >= 10) top10.pop();
-                    top10Min = top10[top10.length-1][1];
+                    top10Min = top10[top10.length - 1][1];
                 }
             }
-            return top10.map(v => ({player: v[0], amount: v[1]}));
+            return await Promise.all(top10.map(async v => ({ playerId: v[0], playerName: await idToGamertag(v[0]), amount: v[1] })));
         };
 
         const result: {
@@ -118,10 +120,10 @@ export function player(app: Express, config: APIConfig) {
             GE: playerPlaces;
             SU: playerPlaces;
         } = {
-            all: getTop10(),
-            US: getTop10Faction(lookupTemplateFaction.get("1").factionId),
-            GE: getTop10Faction(lookupTemplateFaction.get("2").factionId),
-            SU: getTop10Faction(lookupTemplateFaction.get("3").factionId),
+            all: await getTop10(),
+            US: await getTop10Faction(lookupTemplateFaction.get("1").factionId),
+            GE: await getTop10Faction(lookupTemplateFaction.get("2").factionId),
+            SU: await getTop10Faction(lookupTemplateFaction.get("3").factionId),
         };
 
         res.json(result);
