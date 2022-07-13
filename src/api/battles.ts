@@ -20,13 +20,10 @@ export function battles(app: Express, config: APIConfig) {
         lookupTemplateFaction,
         client,
         resolveTitle,
+        GetMissionDetailsCache,
     } = config;
 
-    const GetMissionDetailsCache = new CachedRequests(15, (input: string) =>
-        client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
-            missionId: 0,
-            battleId: Long.fromString(input),
-        }));
+    
 
     app.get("/faction", async (req, res) => {
         res.set("Cache-control", "public, max-age=86400");

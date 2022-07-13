@@ -1,4 +1,4 @@
-import { Client, KeyValueChangeKey } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { loadTemplate } from "hagcp-assets";
 import { drawToCanvas } from "hagcp-canvas";
@@ -10,6 +10,8 @@ import { startAPI } from "./api";
 import { getResolveTitle, getToBFTitle } from "./api/battlefieldNaming";
 import Mylas from "mylas";
 import expressws from 'express-ws';
+import { CachedRequests } from "./cache/cachedRequests";
+import Long from "long";
 
 const staticMaxAge = 2592000;
 
@@ -81,6 +83,11 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         toBFTitle: getToBFTitle(expressDatastore),
         staticMaxAge,
         websockets: new Map,
+        GetMissionDetailsCache: new CachedRequests(15, (input: string) =>
+            client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
+                missionId: 0,
+                battleId: Long.fromString(input),
+            })),
     }));
 
     return app;
