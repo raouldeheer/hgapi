@@ -92,7 +92,7 @@ export function player(app: Express, config: APIConfig) {
                 if (player[1] >= top10Min) {
                     top10.push(player);
                     top10 = top10.sort((a, b) => b[1] - a[1]);
-                    if (top10.length >= 10) top10.pop();
+                    if (top10.length > 10) top10.pop();
                     top10Min = top10[top10.length - 1][1];
                 }
             }
@@ -107,7 +107,7 @@ export function player(app: Express, config: APIConfig) {
                 if (player[1] >= top10Min || top10.length < 10) {
                     top10.push(player);
                     top10 = top10.sort((a, b) => b[1] - a[1]);
-                    if (top10.length >= 10) top10.pop();
+                    if (top10.length > 10) top10.pop();
                     top10Min = top10[top10.length - 1][1];
                 }
             }
