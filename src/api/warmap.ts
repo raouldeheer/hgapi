@@ -1,6 +1,7 @@
 
 import { Express } from "express";
-import { KeyValueChangeKey } from "hagcp-network-client";
+import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
+import Long from "long";
 import { APIConfig, battlefieldstatus, supplylinestatus } from "../interfaces";
 
 export function warmap(app: Express, config: APIConfig) {
@@ -39,6 +40,24 @@ export function warmap(app: Express, config: APIConfig) {
                 } else {
                     res.sendStatus(404);
                 }
+                return;
+            }
+        }
+        res.sendStatus(412);
+    });
+
+    app.get("/WarCatalogue", async (req, res) => {
+        if (!client) {
+            res.sendStatus(503);
+            return;
+        }
+        res.set("Cache-control", "no-store");
+        if (req.query.id) {
+            const id = String(req.query.id);
+            if (/^\d+$/.test(id)) {
+                res.json(await client.sendPacketAsync(ClassKeys.query_war_catalogue_request, {
+                    includeWarId: Long.fromString(id),
+                }));
                 return;
             }
         }
