@@ -45,6 +45,10 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         await client.sendPacketAsync(ClassKeys.subscribewarmapview);
         await client.sendPacketAsync(ClassKeys.SubscribeHostingCenterInfoView);
         saveMapTimer = setInterval(saveMapNow, 30000);
+    }).on(ClassKeys.login2_result, data => {
+        if (data && data.currentplayer) {
+            datastore.SetData("CurrentWar", "0", String(data.currentplayer.war));
+        }
     }).on(ClassKeys.query_war_catalogue_response, (data) => {
         data.warcataloguedata[0].warCatalogueFactions.forEach((element: { factionTemplateId: any; color: string; factionId: string; }) => {
             switch (element.factionTemplateId) {
@@ -91,6 +95,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                         warId = value.id;
                         if (value.sequelwarid !== "0") {
                             console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
+                            datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
                             client.sendPacket(ClassKeys.join_war_request, {
                                 warid: Long.fromString(value.sequelwarid),
                                 factionid: Long.ZERO,

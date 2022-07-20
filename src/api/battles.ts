@@ -23,8 +23,6 @@ export function battles(app: Express, config: APIConfig) {
         GetMissionDetailsCache,
     } = config;
 
-    
-
     app.get("/faction", async (req, res) => {
         res.set("Cache-control", "public, max-age=86400");
         if (req.query.factionId) {
@@ -164,6 +162,7 @@ export function battles(app: Express, config: APIConfig) {
                                 deletedBattles,
                                 changedBattles,
                                 activeBattles,
+                                warId: datastore.GetData("CurrentWar", "0") || "0",
                             }));
                         }
                     };
