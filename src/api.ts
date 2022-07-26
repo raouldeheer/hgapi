@@ -8,10 +8,12 @@ import { serverLoad } from "./api/serverLoad";
 import { staticInfo } from "./api/staticInfo";
 import expressws from 'express-ws';
 import { warmap } from "./api/warmap";
+import { getEndpointFunc } from "./endpoint";
 
 export function startAPI(config: APIConfig) {
     const app = express();
     expressws(app, undefined, { wsOptions: { perMessageDeflate: true, } });
+    config.endpoint = getEndpointFunc(app);
 
     const endpointComponents = [
         battles,

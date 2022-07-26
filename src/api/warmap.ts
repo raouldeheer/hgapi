@@ -1,21 +1,18 @@
-
 import { Express } from "express";
 import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
 import Long from "long";
+import { checkService, notFound } from "../endpoint";
 import { APIConfig, battlefieldstatus, supplylinestatus } from "../interfaces";
 
 export function warmap(app: Express, config: APIConfig) {
     const {
         client,
         datastore,
+        endpoint,
     } = config;
 
-    app.get("/mapentitystatus", async (req, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "no-store");
+    endpoint("/mapentitystatus", "no-store", async req => {
+        checkService(client);
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\d+$/.test(id)) {
@@ -24,43 +21,34 @@ export function warmap(app: Express, config: APIConfig) {
                 const supplyline = battlefield ? null : Array.from(datastore.GetItemStore<supplylinestatus>(KeyValueChangeKey.supplylinestatus)?.values() || [])
                     .find(value => value.supplylineid === id);
                 if (battlefield) {
-                    res.json({
+                    return {
                         id: battlefield.id,
                         factionid: battlefield.factionid,
                         mapEntityId: battlefield.battlefieldid,
                         warid: battlefield.warid,
-                    });
+                    };
                 } else if (supplyline) {
-                    res.json({
+                    return {
                         id: supplyline.id,
                         factionid: supplyline.factionid,
                         mapEntityId: supplyline.supplylineid,
                         warid: supplyline.warid,
-                    });
-                } else {
-                    res.sendStatus(404);
+                    };
                 }
-                return;
+                notFound();
             }
         }
-        res.sendStatus(412);
+        throw 412;
     });
 
-    app.get("/WarCatalogue", async (req, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "no-store");
+    endpoint("/WarCatalogue", "no-store", async req => {
+        checkService(client);
         if (req.query.id) {
             const id = String(req.query.id);
-            if (/^\d+$/.test(id)) {
-                res.json(await client.sendPacketAsync(ClassKeys.query_war_catalogue_request, {
-                    includeWarId: Long.fromString(id),
-                }));
-                return;
-            }
+            if (/^\d+$/.test(id)) return await client.sendPacketAsync(ClassKeys.query_war_catalogue_request, {
+                includeWarId: Long.fromString(id),
+            });
         }
-        res.sendStatus(412);
+        throw 412;
     });
 }

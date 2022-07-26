@@ -12,6 +12,7 @@ import Mylas from "mylas";
 import expressws from 'express-ws';
 import { CachedRequests } from "./cache/cachedRequests";
 import Long from "long";
+import { getEndpointFunc } from "./endpoint";
 
 const staticMaxAge = 2592000;
 
@@ -88,6 +89,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
                 missionId: 0,
                 battleId: Long.fromString(input),
             })),
+        endpoint: () => {},
     }));
 
     return app;

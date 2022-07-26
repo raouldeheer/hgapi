@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { ClassKeys, KeyValueChangeKey, ResponseType } from "hagcp-network-client";
 import Long from "long";
-import { stringify } from "uuid";
+import { checkService, notFound } from "../endpoint";
 import { APIConfig, Battle, SearchPlayerDetailResponse } from "../interfaces";
 
 export function player(app: Express, config: APIConfig) {
@@ -10,56 +10,42 @@ export function player(app: Express, config: APIConfig) {
         datastore,
         GetMissionDetailsCache,
         lookupTemplateFaction,
+        endpoint,
     } = config;
 
     const idToGamertag = async (id: string) => (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
         playerId: Long.fromString(id)
     })).gamertag;
 
-    app.get("/playerdetail", async (req, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "public, max-age=60");
+    endpoint("/playerdetail", "public, max-age=60", async req => {
+        checkService(client);
         if (req.query.id) {
             const id = String(req.query.id);
             if (/^\-\d+$/.test(id)) {
                 const gamertag = await idToGamertag(id);
                 if (gamertag) {
-                    const result = await client!.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
+                    const result = await client.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
                         playerGamerTag: gamertag
                     });
-                    if (result.response === ResponseType.player_not_found) {
-                        res.sendStatus(404);
-                        return;
-                    }
-                    res.json(result);
-                    return;
+                    if (result.response === ResponseType.player_not_found) notFound();
+                    return result;
                 }
-                res.sendStatus(404);
-                return;
+                notFound();
             }
         } else if (req.query.gamertag) {
             const gamertag = String(req.query.gamertag);
-            if (/[@*\\%\s]/.test(gamertag) || gamertag.length < 4 || gamertag.length > 26 || gamertag.includes("reto.")) {
-                res.sendStatus(418); //! This should never happen!
-                return;
-            }
-            const result = await client!.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
+            if (/[@*\\%\s]/.test(gamertag) || gamertag.length < 4 || gamertag.length > 26 || gamertag.includes("reto.") || gamertag.includes("tlm."))
+                throw 418; //! This should never happen!
+            const result = await client.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
                 playerGamerTag: gamertag
             });
-            if (result.response === ResponseType.player_not_found) {
-                res.sendStatus(404);
-                return;
-            }
-            res.json(result);
-            return;
+            if (result.response === ResponseType.player_not_found) notFound();
+            return result;
         }
-        res.sendStatus(412);
+        throw 412;
     });
 
-    app.get("/attop", async (req, res) => {
+    endpoint("/attop", "public, max-age=60", async _ => {
         const battles = await Promise.all(
             Array.from<Battle>(datastore.GetItemStore(KeyValueChangeKey.battle)?.values() || [])
                 .map(async value => ({
@@ -126,6 +112,6 @@ export function player(app: Express, config: APIConfig) {
             SU: await getTop10Faction(lookupTemplateFaction.get("3").factionId),
         };
 
-        res.json(result);
+        return result;
     });
 }

@@ -1,6 +1,7 @@
 import { Client, ResponseType } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { CachedRequests } from "./cache/cachedRequests";
+import { EndpointHandler } from "./endpoint";
 
 export interface APIConfig {
     client?: Client;
@@ -13,6 +14,7 @@ export interface APIConfig {
     staticMaxAge: number;
     websockets: Map<string, Set<string>>;
     GetMissionDetailsCache: CachedRequests<string, GetMissionDetailsResponse>;
+    endpoint: EndpointHandler;
 }
 
 export interface Battle {

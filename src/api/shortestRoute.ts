@@ -1,6 +1,5 @@
 import { Express } from "express";
 import { DijkstraCalculator } from "dijkstra-calculator";
-import { Request, Response } from "express";
 import { APIConfig, Battlefield } from "../interfaces";
 import { KeyValueChangeKey } from "hagcp-network-client";
 
@@ -8,6 +7,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
     const {
         expressDatastore: datastore,
         resolveTitle,
+        endpoint,
     } = config;
 
     const mapGraph = new DijkstraCalculator;
@@ -34,26 +34,17 @@ export function shortestRoute(app: Express, config: APIConfig) {
             .reduce((prev, curr) => prev + curr, 0),
     });
 
-    app.get("/battlefieldroute", (req: Request, res: Response) => {
-        res.set("Cache-control", "public, max-age=300");
+    endpoint("/battlefieldroute", "public, max-age=300", req => {
         if (req.query.id1 && req.query.id2) {
             const id1 = String(req.query.id1);
             const id2 = String(req.query.id2);
-            if (/^\d+$/.test(id1) && /^\d+$/.test(id2)) {
-                res.json(getResult(id1, id2));
-                return;
-            }
+            if (/^\d+$/.test(id1) && /^\d+$/.test(id2)) return getResult(id1, id2);
         } else if (req.query.bftitle1, req.query.bftitle2) {
-            try {
-                const id1 = resolveTitle(String(req.query.bftitle1)).id;
-                const id2 = resolveTitle(String(req.query.bftitle2)).id;
-                res.json(getResult(id1, id2));
-            } catch (error) {
-                if (typeof error == "number") res.sendStatus(error);
-            }
-            return;
+            const id1 = resolveTitle(String(req.query.bftitle1)).id;
+            const id2 = resolveTitle(String(req.query.bftitle2)).id;
+            return getResult(id1, id2);
         }
-        res.sendStatus(412);
+        throw 412;
     });
 
     const battlefields = datastore.GetItemStore<Battlefield>("battlefield") || new Map;
@@ -90,8 +81,7 @@ export function shortestRoute(app: Express, config: APIConfig) {
         };
     };
 
-    app.get("/planeroute", (req: Request, res: Response) => {
-        res.set("Cache-control", "public, max-age=300");
+    endpoint("/planeroute", "public, max-age=300", req => {
         if (req.query.distance) {
             const distance = Number(req.query.distance);
             const planeGraph = distances.get(distance);
@@ -108,51 +98,34 @@ export function shortestRoute(app: Express, config: APIConfig) {
                     const id1 = String(req.query.id1);
                     const id2 = String(req.query.id2);
                     if (/^\d+$/.test(id1) && /^\d+$/.test(id2) && airfields.has(id1) && airfields.has(id2)) {
-                        res.json(getPlaneResult(id1, id2));
-                        return;
+                        return getPlaneResult(id1, id2);
                     }
                 } else if (req.query.bftitle1, req.query.bftitle2) {
-                    try {
-                        const id1 = resolveTitle(String(req.query.bftitle1)).id;
-                        const id2 = resolveTitle(String(req.query.bftitle2)).id;
-                        if (airfields.has(id1) && airfields.has(id2)) {
-                            res.json(getPlaneResult(id1, id2));
-                        } else {
-                            res.sendStatus(412);
-                        }
-                    } catch (error) {
-                        if (typeof error == "number") res.sendStatus(error);
+                    const id1 = resolveTitle(String(req.query.bftitle1)).id;
+                    const id2 = resolveTitle(String(req.query.bftitle2)).id;
+                    if (airfields.has(id1) && airfields.has(id2)) {
+                        return getPlaneResult(id1, id2);
                     }
-                    return;
                 }
             }
         }
-        res.sendStatus(412);
+        throw 412;
     });
 
-    app.get("/battlefieldseparation", (req: Request, res: Response) => {
-        res.set("Cache-control", "public, max-age=300");
+    endpoint("/battlefieldseparation", "public, max-age=300", req => {
         if (req.query.id1 && req.query.id2) {
             const id1 = String(req.query.id1);
             const id2 = String(req.query.id2);
             if (/^\d+$/.test(id1) && /^\d+$/.test(id2) && battlefields.has(id1) && battlefields.has(id2)) {
-                res.json(getSeparation(id1, id2));
-                return;
+                return getSeparation(id1, id2);
             }
         } else if (req.query.bftitle1, req.query.bftitle2) {
-            try {
-                const id1 = resolveTitle(String(req.query.bftitle1)).id;
-                const id2 = resolveTitle(String(req.query.bftitle2)).id;
-                if (battlefields.has(id1) && battlefields.has(id2)) {
-                    res.json(getSeparation(id1, id2));
-                } else {
-                    res.sendStatus(412);
-                }
-            } catch (error) {
-                if (typeof error == "number") res.sendStatus(error);
+            const id1 = resolveTitle(String(req.query.bftitle1)).id;
+            const id2 = resolveTitle(String(req.query.bftitle2)).id;
+            if (battlefields.has(id1) && battlefields.has(id2)) {
+                return getSeparation(id1, id2);
             }
-            return;
         }
-        res.sendStatus(412);
+        throw 412;
     });
 }

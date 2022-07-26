@@ -1,30 +1,24 @@
 import { Express } from "express";
 import armyresourcecategory from "hagcp-assets/json/armyresourcecategory.json";
 import { ClassKeys } from "hagcp-network-client";
+import { checkService } from "../endpoint";
 import { APIConfig, War } from "../interfaces";
 
 export function serverLoad(app: Express, config: APIConfig) {
-    const client = config.client;
+    const {
+        client,
+        endpoint,
+    } = config;
 
-    app.get("/serverload", async (_, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "public, max-age=60");
+    endpoint("/serverload", "public, max-age=60", async _ => {
+        checkService(client);
         const data = await client.sendPacketAsync<{ requestType: 0; }, any>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
-        if (data) {
-            res.json(data);
-            return;
-        }
-        res.sendStatus(412);
+        if (data) return data;
+        throw 412;
     });
 
-    app.get("/queuestats", async (_, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
+    endpoint("/queuestats", "public, max-age=60", async _ => {
+        checkService(client);
         const data = await client.sendPacketAsync<{ requestType: 0; }, any>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
         if (data) {
             const factions = new Map<string, Map<String, any[]>>([
@@ -58,18 +52,13 @@ export function serverLoad(app: Express, config: APIConfig) {
                 Reflect.set(factionObj, "recon", getSubData(factionId, 6));
                 Reflect.set(result, factionId, factionObj);
             });
-            res.json(result);
-            return;
+            return result;
         }
-        res.sendStatus(412);
+        throw 412;
     });
 
-    app.get("/stockpiles", async (_, res) => {
-        if (!client) {
-            res.sendStatus(503);
-            return;
-        }
-        res.set("Cache-control", "public, max-age=60");
+    endpoint("/stockpiles", "public, max-age=60", async _ => {
+        checkService(client);
         const data = await client.sendPacketAsync<{ requestType: 0; }, { wars: War[]; }>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
         if (data) {
             const idToName = new Map<string, string>();
@@ -97,9 +86,8 @@ export function serverLoad(app: Express, config: APIConfig) {
                 Reflect.set(categoryObj, "SU", categoryCounts.get("3") || 0);
                 Reflect.set(result, categoryName, categoryObj);
             }
-            res.json(result);
-            return;
+            return result;
         }
-        res.sendStatus(412);
+        throw 412;
     });
 }

@@ -1,8 +1,8 @@
 import { KeyValueChangeKey } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
+import { notFound } from "../endpoint";
 import { MapPoint, Battlefield, Accesspoint, AccesspointTemplate, Supplyline } from "../interfaces";
 
-const notFound = () => { throw 404; };
 const getItemStoreArray = <T>(datastore: DataStore, name: KeyValueChangeKey) =>
     Array.from<T>(datastore.GetItemStore<T>(name)?.values() || []);
 
