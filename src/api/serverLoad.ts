@@ -1,25 +1,30 @@
 import { Express } from "express";
 import armyresourcecategory from "hagcp-assets/json/armyresourcecategory.json";
 import { ClassKeys } from "hagcp-network-client";
+import { CachedFunction } from "../cache/cachedRequests";
 import { checkService } from "../endpoint";
 import { APIConfig, War } from "../interfaces";
 
+const serverloadCacheTime = 10;
 export function serverLoad(app: Express, config: APIConfig) {
     const {
         client,
         endpoint,
     } = config;
 
-    endpoint("/serverload", "public, max-age=60", async _ => {
+    const cachedServerload = CachedFunction(serverloadCacheTime, () => {
         checkService(client);
-        const data = await client.sendPacketAsync<{ requestType: 0; }, any>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
+        return client.sendPacketAsync<{ requestType: 0; }, { wars: War[]; waitingTimes: any[]; }>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
+    });
+
+    endpoint("/serverload", `public, max-age=${serverloadCacheTime}`, async _ => {
+        const data = await cachedServerload();
         if (data) return data;
         throw 412;
     });
 
-    endpoint("/queuestats", "public, max-age=60", async _ => {
-        checkService(client);
-        const data = await client.sendPacketAsync<{ requestType: 0; }, any>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
+    endpoint("/queuestats", `public, max-age=${serverloadCacheTime}`, async _ => {
+        const data = await cachedServerload();
         if (data) {
             const factions = new Map<string, Map<String, any[]>>([
                 ["1", new Map],
@@ -57,9 +62,8 @@ export function serverLoad(app: Express, config: APIConfig) {
         throw 412;
     });
 
-    endpoint("/stockpiles", "public, max-age=60", async _ => {
-        checkService(client);
-        const data = await client.sendPacketAsync<{ requestType: 0; }, { wars: War[]; }>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
+    endpoint("/stockpiles", `public, max-age=${serverloadCacheTime}`, async _ => {
+        const data = await cachedServerload();
         if (data) {
             const idToName = new Map<string, string>();
             const idToCount = new Map<string, Map<string, number>>();
