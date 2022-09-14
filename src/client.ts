@@ -77,7 +77,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                 console.log(`redirectSrv detected: ${data.redirectSrv}`);
             }
             await client.sendPacketAsync(ClassKeys.unsubscribewarmapview);
-            await saveMapNow();
             saveMapTimer?.refresh?.();
             datastore.ResetData(KeyValueChangeKey.battlefieldstatus);
             datastore.ResetData(KeyValueChangeKey.supplylinestatus);
