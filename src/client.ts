@@ -1,4 +1,4 @@
-import { ClassKeys, Client, keyToClass, KeyValueChangeKey, ResponseType } from "hagcp-network-client";
+import { ClassKeys, Client, keyToClass, KeyValueChangeKey, ResponseType, Packets } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -20,7 +20,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         const date = (new Date).toISOString().replace(/[-:.]/g, "");
         if (warId) {
             if (!client) return;
-            await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
+            const catalogueResponse = await client.sendPacketAsync<undefined, Packets.query_war_catalogue_response>(ClassKeys.query_war_catalogue_request);
             const queryServerInfo = await client.sendPacketAsync(ClassKeys.QueryServerInfo);
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
@@ -33,7 +33,10 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                 }))
             );
 
+            const thisWar = catalogueResponse.warcataloguedata.find(catalogue => String(catalogue.id) === warId);
+
             mylas.json.saveS(`${outDir}/${warId}/${date}.jsonc`, {
+                warName: thisWar?.name || "0000",
                 factions: Array.from(lookupFactions.values()),
                 queryServerInfo,
             });
