@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey, ResponseType, Packets, PacketClass } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, ResponseType, Packets, keyToClass } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -26,7 +26,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
-                gzipSync(PacketClass.KeyValueChangeSet.toBuffer({
+                gzipSync(keyToClass.get(ClassKeys.KeyValueChangeSet)!.toBuffer!({
                     set: [
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set || [],
@@ -54,7 +54,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             datastore.SetData("CurrentWar", "0", String(data.currentplayer.war));
         }
     }).on(ClassKeys.query_war_catalogue_response, (data) => {
-        data.warcataloguedata[0].warCatalogueFactions.forEach((element) => {
+        data.warcataloguedata[0].warCatalogueFactions.forEach((element: any) => {
             const faction = element as unknown as Faction;
             switch (element.factionTemplateId.toString()) {
                 case "1":
@@ -116,6 +116,11 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                 }, 60000);
             }
         }
+    }).on("closed", () => {
+        console.log("Socket closed!");
+        console.log(`After ${Date.now() - startTime}ms`);
+        clearInterval(saveMapTimer);
+        process.exit(1);
     }).on("close", () => {
         console.log("Socket closed!");
         console.log(`After ${Date.now() - startTime}ms`);
