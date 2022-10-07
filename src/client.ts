@@ -1,12 +1,13 @@
-import { ClassKeys, Client, keyToClass, KeyValueChangeKey, ResponseType, Packets } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, ResponseType, Packets, PacketClass } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
 import Long from "long";
 import dotenv from "dotenv";
+import { Faction } from "./interfaces";
 dotenv.config();
 
-export async function startClient(datastore: DataStore, lookupFactions: Map<string, any>, lookupTemplateFaction: Map<string, any>) {
+export async function startClient(datastore: DataStore, lookupFactions: Map<string, Faction>, lookupTemplateFaction: Map<string, Faction>) {
     const client = await Client.connectToHQ(
         String(process.env.HAG_USERAGENT),
         String(process.env.HAG_USERNAME),
@@ -25,10 +26,10 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
-                gzipSync(keyToClass.get(ClassKeys.KeyValueChangeSet)!.toBuffer!({
+                gzipSync(PacketClass.KeyValueChangeSet.toBuffer({
                     set: [
-                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set!,
-                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set!,
+                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
+                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set || [],
                     ]
                 }))
             );
@@ -53,23 +54,24 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             datastore.SetData("CurrentWar", "0", String(data.currentplayer.war));
         }
     }).on(ClassKeys.query_war_catalogue_response, (data) => {
-        data.warcataloguedata[0].warCatalogueFactions.forEach((element: { factionTemplateId: any; color: string; factionId: string; }) => {
-            switch (element.factionTemplateId) {
+        data.warcataloguedata[0].warCatalogueFactions.forEach((element) => {
+            const faction = element as unknown as Faction;
+            switch (element.factionTemplateId.toString()) {
                 case "1":
-                    element.color = "#0f0";
+                    faction.color = "#0f0";
                     break;
                 case "2":
-                    element.color = "#00f";
+                    faction.color = "#00f";
                     break;
                 case "3":
-                    element.color = "#f00";
+                    faction.color = "#f00";
                     break;
                 default:
-                    element.color = "#000";
+                    faction.color = "#000";
                     break;
             }
-            lookupFactions.set(element.factionId, element);
-            lookupTemplateFaction.set(element.factionTemplateId, element);
+            lookupFactions.set(element.factionId.toString(), faction);
+            lookupTemplateFaction.set(element.factionTemplateId.toString(), faction);
         });
     }).on(ClassKeys.join_war_response, async (data: { msg: ResponseType, redirectSrv?: string; }) => {
         if (data.msg === ResponseType.ok) {
@@ -87,36 +89,34 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         } else {
             console.error(`ERROR: ${data}`);
         }
-    }).on("message", async (typetext, data) => {
-        if (typetext == ClassKeys.KeyValueChangeSet) {
-            datastore.SaveData(data);
-            if (data?.set) {
-                for (const iterator of data.set) {
-                    if (iterator.key === KeyValueChangeKey.war) {
-                        const value = iterator.value;
-                        warId = value.id;
-                        if (value.sequelwarid !== "0") {
-                            console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
-                            datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
-                            client.sendPacket(ClassKeys.join_war_request, {
-                                warid: Long.fromString(value.sequelwarid),
-                                factionid: Long.ZERO,
-                                playedFirstBlood: 0,
-                            });
-                        }
+    }).on(ClassKeys.KeyValueChangeSet, data => {
+        datastore.SaveData(data);
+        if (data?.set) {
+            for (const iterator of data.set) {
+                if (iterator.key === KeyValueChangeKey.war) {
+                    const value = iterator.value;
+                    warId = value.id;
+                    if (value.sequelwarid !== "0") {
+                        console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
+                        datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
+                        client.sendPacket(ClassKeys.join_war_request, {
+                            warid: Long.fromString(value.sequelwarid),
+                            factionid: Long.ZERO,
+                            playedFirstBlood: 0,
+                        });
                     }
                 }
             }
-            if (data?.delete) for (const iterator of data.delete) {
-                if (iterator.key === KeyValueChangeKey.supplylinestatus) {
-                    datastore.SetData("deletesupplylinestatus", iterator.value, iterator.value);
-                    setTimeout(() => {
-                        datastore.SaveData({ delete: [{ key: "deletesupplylinestatus", value: iterator.value }] });
-                    }, 60000);
-                }
+        }
+        if (data?.delete) for (const iterator of data.delete) {
+            if (iterator.key === KeyValueChangeKey.supplylinestatus) {
+                datastore.SetData("deletesupplylinestatus", iterator.value, iterator.value);
+                setTimeout(() => {
+                    datastore.SaveData({ delete: [{ key: "deletesupplylinestatus", value: iterator.value }] });
+                }, 60000);
             }
         }
-    }).on("closed", () => {
+    }).on("close", () => {
         console.log("Socket closed!");
         console.log(`After ${Date.now() - startTime}ms`);
         clearInterval(saveMapTimer);

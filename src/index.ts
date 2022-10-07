@@ -2,10 +2,11 @@ import { DataStore } from "hagcp-utils";
 import { startApp } from "./app";
 import { startClient } from "./client";
 import ip from "ip";
+import { Faction } from "./interfaces";
 
 const expressPort = 4269;
-const lookupFactions = new Map<string, any>();
-const lookupTemplateFaction = new Map<string, any>();
+const lookupFactions = new Map<string, Faction>();
+const lookupTemplateFaction = new Map<string, Faction>();
 const datastore = new DataStore;
 
 (async () => {

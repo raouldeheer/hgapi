@@ -1,7 +1,11 @@
-import { Client, ResponseType } from "hagcp-network-client";
+import { Client, Packets, ResponseType } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { CachedRequests } from "./cache/cachedRequests";
 import { EndpointHandler } from "./endpoint";
+
+type LongToString<T> = {
+    [P in keyof T]: T[P] extends Long ? string : T[P] extends Long[] ? string[] : T[P];
+};
 
 export interface APIConfig {
     client?: Client;
@@ -64,27 +68,8 @@ export interface Supplyline extends MapPoint {
     supplylinetemplateid: string;
 }
 
-export interface Faction {
-    factionId: string;
-    factionTemplateId: string;
-    factionTag: string;
-    factionVictoryPoints: number;
-    factionPlayerCount: number;
-    factionMinPlayerCount: number;
-    factionMaxPlayerCount: number;
-    factionPlayerOnlineCount: number;
-    factionBonus: number;
-    factionDeployedCommandPointsInfantry: number;
-    factionDeployedCommandPointsArmor: number;
-    factionDeployedCommandPointsAir: number;
-    factionControlledBattlefields: number;
-    battlesWon: number;
-    battlesLost: number;
-    infantryLost: number;
-    vehiclesLost: number;
-    tanksLost: number;
-    planesLost: number;
-    ownedMajorCities: string[];
+export interface Faction extends LongToString<Packets.war_catalogue_faction> {
+    color: string;
 }
 
 export interface SearchPlayerDetailResponse {
