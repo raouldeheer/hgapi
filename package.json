@@ -23,7 +23,7 @@
     "hagcp-assets": "^1.1.4",
     "hagcp-canvas": "^1.0.2",
     "hagcp-network-client": "1.1.10",
-    "hagcp-utils": "^1.0.9",
+    "hagcp-utils": "^1.0.10",
     "ip": "^1.1.8",
     "long": "^5.2.0",
     "morgan": "^1.10.0",
