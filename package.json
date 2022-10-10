@@ -22,7 +22,7 @@
     "express-ws": "^5.0.2",
     "hagcp-assets": "^1.1.5",
     "hagcp-canvas": "^1.0.3",
-    "hagcp-network-client": "1.1.10",
+    "hagcp-network-client": "1.1.13",
     "hagcp-utils": "^1.0.10",
     "ip": "^1.1.8",
     "long": "^5.2.0",
