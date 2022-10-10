@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
+import { ClassKeys, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
 import Long from "long";
 import { checkService, notFound } from "../endpoint";
 import { APIConfig, battlefieldstatus, supplylinestatus } from "../interfaces";
@@ -45,7 +45,7 @@ export function warmap(app: Express, config: APIConfig) {
         checkService(client);
         if (req.query.id) {
             const id = String(req.query.id);
-            if (/^\d+$/.test(id)) return await client.sendPacketAsync(ClassKeys.query_war_catalogue_request, {
+            if (/^\d+$/.test(id)) return await client.sendClassAsync(PacketClass.query_war_catalogue_request, {
                 includeWarId: Long.fromString(id),
             });
         }

@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { ClassKeys, KeyValueChangeKey, ResponseType } from "hagcp-network-client";
+import { ClassKeys, KeyValueChangeKey, PacketClass, Packets, ResponseType } from "hagcp-network-client";
 import Long from "long";
 import { checkService, notFound } from "../endpoint";
 import { APIConfig, Battle, SearchPlayerDetailResponse } from "../interfaces";
@@ -13,9 +13,9 @@ export function player(app: Express, config: APIConfig) {
         endpoint,
     } = config;
 
-    const idToGamertag = async (id: string) => (await client!.sendPacketAsync<{ playerId: Long; }, { gamertag: string; }>(ClassKeys.QueryGamertagRequest, {
+    const idToGamertag = async (id: string) => (await client!.sendClassAsync(PacketClass.QueryGamertagRequest, {
         playerId: Long.fromString(id)
-    })).gamertag;
+    }) as Packets.QueryGamertagResponse).gamertag;
 
     endpoint("/playerdetail", "public, max-age=60", async req => {
         checkService(client);
@@ -24,7 +24,7 @@ export function player(app: Express, config: APIConfig) {
             if (/^\-\d+$/.test(id)) {
                 const gamertag = await idToGamertag(id);
                 if (gamertag) {
-                    const result = await client.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
+                    const result: Packets.SearchPlayerDetailResponse = await client.sendClassAsync(PacketClass.SearchPlayerDetailRequest, {
                         playerGamerTag: gamertag
                     });
                     if (result.response === ResponseType.player_not_found) notFound();
@@ -36,7 +36,7 @@ export function player(app: Express, config: APIConfig) {
             const gamertag = String(req.query.gamertag);
             if (/[@*\\%\s]/.test(gamertag) || gamertag.length < 4 || gamertag.length > 26 || gamertag.includes("reto.") || gamertag.includes("tlm."))
                 throw 418; //! This should never happen!
-            const result = await client.sendPacketAsync<{ playerGamerTag: string; }, SearchPlayerDetailResponse>(ClassKeys.SearchPlayerDetailRequest, {
+            const result: Packets.SearchPlayerDetailResponse = await client.sendClassAsync(PacketClass.SearchPlayerDetailRequest, {
                 playerGamerTag: gamertag
             });
             if (result.response === ResponseType.player_not_found) notFound();

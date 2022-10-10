@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { loadTemplate } from "hagcp-assets";
 import { drawToCanvas } from "hagcp-canvas";
@@ -85,8 +85,8 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         staticMaxAge,
         websockets: new Map,
         GetMissionDetailsCache: new CachedRequests(15, (input: string) =>
-            client!.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
-                missionId: 0,
+            client!.sendClassAsync(PacketClass.GetMissionDetailsRequest, {
+                missionId: Long.ZERO,
                 battleId: Long.fromString(input),
             })),
         endpoint: () => {},

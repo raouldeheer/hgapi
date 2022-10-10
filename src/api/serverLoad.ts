@@ -1,6 +1,6 @@
 import { Express } from "express";
 import armyresourcecategory from "hagcp-assets/json/armyresourcecategory.json";
-import { ClassKeys } from "hagcp-network-client";
+import { ClassKeys, PacketClass } from "hagcp-network-client";
 import { CachedFunction } from "../cache/cachedRequests";
 import { checkService } from "../endpoint";
 import { APIConfig, War } from "../interfaces";
@@ -14,7 +14,7 @@ export function serverLoad(app: Express, config: APIConfig) {
 
     const cachedServerload = CachedFunction(serverloadCacheTime, () => {
         checkService(client);
-        return client.sendPacketAsync<{ requestType: 0; }, { wars: War[]; waitingTimes: any[]; }>(ClassKeys.MonitorLoadRequest, { requestType: 0, });
+        return client.sendClassAsync<typeof PacketClass.MonitorLoadRequest, { wars: War[]; waitingTimes: any[]; }>(PacketClass.MonitorLoadRequest, { requestType: 0, });
     });
 
     endpoint("/serverload", `public, max-age=${serverloadCacheTime}`, async _ => {
