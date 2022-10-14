@@ -1,4 +1,4 @@
-import { Client, Packets, ResponseType } from "hagcp-network-client";
+import { Client, Long, Packets, ResponseType } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { CachedRequests } from "./cache/cachedRequests";
 import { EndpointHandler } from "./endpoint";

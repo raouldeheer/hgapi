@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey, ResponseType, Packets, keyToClass } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, ResponseType, PacketClass, Packets } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -21,12 +21,12 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         const date = (new Date).toISOString().replace(/[-:.]/g, "");
         if (warId) {
             if (!client) return;
-            const catalogueResponse = await client.sendPacketAsync<undefined, Packets.query_war_catalogue_response>(ClassKeys.query_war_catalogue_request);
-            const queryServerInfo = await client.sendPacketAsync(ClassKeys.QueryServerInfo);
+            const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request);
+            const queryServerInfo: Packets.QueryServerInfoResponse = await client.sendClassAsync(PacketClass.QueryServerInfo);
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
             await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
-                gzipSync(keyToClass.get(ClassKeys.KeyValueChangeSet)!.toBuffer!({
+                gzipSync(PacketClass.KeyValueChangeSet.toBuffer({
                     set: [
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set || [],
@@ -45,9 +45,9 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
     }
 
     client.once("loggedin", async () => {
-        await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
-        await client.sendPacketAsync(ClassKeys.subscribewarmapview);
-        await client.sendPacketAsync(ClassKeys.SubscribeHostingCenterInfoView);
+        await client.sendClassAsync(PacketClass.query_war_catalogue_request);
+        await client.sendClassAsync(PacketClass.subscribewarmapview);
+        await client.sendClassAsync(PacketClass.SubscribeHostingCenterInfoView);
         saveMapTimer = setInterval(saveMapNow, 30000);
     }).on(ClassKeys.login2_result, data => {
         if (data && data.currentplayer) {
@@ -78,14 +78,14 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             if (data.redirectSrv) {
                 console.log(`redirectSrv detected: ${data.redirectSrv}`);
             }
-            await client.sendPacketAsync(ClassKeys.unsubscribewarmapview);
+            await client.sendClassAsync(PacketClass.unsubscribewarmapview);
             saveMapTimer?.refresh?.();
             datastore.ResetData(KeyValueChangeKey.battlefieldstatus);
             datastore.ResetData(KeyValueChangeKey.supplylinestatus);
             datastore.ResetData(KeyValueChangeKey.battle);
             lookupFactions.clear();
-            await client.sendPacketAsync(ClassKeys.subscribewarmapview);
-            await client.sendPacketAsync(ClassKeys.query_war_catalogue_request);
+            await client.sendClassAsync(PacketClass.subscribewarmapview);
+            await client.sendClassAsync(PacketClass.query_war_catalogue_request);
         } else {
             console.error(`ERROR: ${data}`);
         }
@@ -99,7 +99,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                     if (value.sequelwarid !== "0") {
                         console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
                         datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
-                        client.sendPacket(ClassKeys.join_war_request, {
+                        client.sendClass(PacketClass.join_war_request, {
                             warid: Long.fromString(value.sequelwarid),
                             factionid: Long.ZERO,
                             playedFirstBlood: 0,
@@ -116,11 +116,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                 }, 60000);
             }
         }
-    }).on("closed", () => {
-        console.log("Socket closed!");
-        console.log(`After ${Date.now() - startTime}ms`);
-        clearInterval(saveMapTimer);
-        process.exit(1);
     }).on("close", () => {
         console.log("Socket closed!");
         console.log(`After ${Date.now() - startTime}ms`);

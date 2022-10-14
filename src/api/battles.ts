@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { ClassKeys, KeyValueChangeKey } from "hagcp-network-client";
+import { ClassKeys, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
 import Long from "long";
 import { APIConfig, Battle } from "../interfaces";
 import ws from "ws";
@@ -43,15 +43,15 @@ export function battles(app: Express, config: APIConfig) {
             const battle = Array.from(datastore.GetItemStore<Battle>(KeyValueChangeKey.battle)?.values() || [])
                 .find(value => value.mapEntityId === mapPoint.id) || notFound();
 
-            return await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
-                missionId: 0,
+            return await client.sendClassAsync(PacketClass.GetMissionDetailsRequest, {
+                missionId: Long.ZERO,
                 battleId: Long.fromString(battle.id),
             });
         } else if (req.query.battleId) {
             const battleId = String(req.query.battleId);
             if (/^\d+$/.test(battleId)) {
-                return await client.sendPacketAsync(ClassKeys.GetMissionDetailsRequest, {
-                    missionId: 0,
+                return await client.sendClassAsync(PacketClass.GetMissionDetailsRequest, {
+                    missionId: Long.ZERO,
                     battleId: Long.fromString(battleId),
                 });
             }
