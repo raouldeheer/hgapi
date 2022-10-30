@@ -38,7 +38,24 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
 
             mylas.json.saveS(`${outDir}/${warId}/${date}.jsonc`, {
                 warName: thisWar?.name || "0000",
-                factions: Array.from(lookupFactions.values()),
+                factions: thisWar?.warCatalogueFactions.map(item => {
+                    const faction = item as unknown as Faction;
+                    switch (faction.factionTemplateId.toString()) {
+                        case "1":
+                            faction.color = "#0f0";
+                            break;
+                        case "2":
+                            faction.color = "#00f";
+                            break;
+                        case "3":
+                            faction.color = "#f00";
+                            break;
+                        default:
+                            faction.color = "#000";
+                            break;
+                    }
+                    return item;
+                }),
                 queryServerInfo,
             });
         }
