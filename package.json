@@ -25,7 +25,7 @@
     "hagcp-network-client": "^1.1.14",
     "hagcp-utils": "^1.0.10",
     "ip": "^1.1.8",
-    "long": "^5.2.0",
+    "long": "^5.2.1",
     "morgan": "^1.10.0",
     "mylas": "^2.1.13",
     "tslib": "^2.4.1",
