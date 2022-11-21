@@ -29,12 +29,12 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
 
             const thisWar = catalogueResponse.warcataloguedata.find(catalogue => String(catalogue.id) === warId);
 
-            await mylas.buf.save(`${outDir}/${warId}/${date}.hgmap`, toHGMap(
+            await mylas.buf.save(`${outDir}/${warId}/${date}.hgmap`, gzipSync(toHGMap(
                 thisWar?.name || "0000",
                 thisWar?.warCatalogueFactions || [],
                 queryServerInfo,
                 datastore,
-            ));
+            )));
         }
     }
 
