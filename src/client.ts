@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey, ResponseType, PacketClass, Packets } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, ResponseType, PacketClass, Packets, KeyValueSet } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -30,7 +30,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                     set: [
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
                         ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set || [],
-                    ]
+                    ] as KeyValueSet[]
                 }))
             );
 
