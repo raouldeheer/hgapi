@@ -5,6 +5,7 @@ import { gzipSync } from "zlib";
 import Long from "long";
 import dotenv from "dotenv";
 import { Faction } from "./interfaces";
+import { toHGMap } from "./hgmap";
 dotenv.config();
 
 export async function startClient(datastore: DataStore, lookupFactions: Map<string, Faction>, lookupTemplateFaction: Map<string, Faction>) {
@@ -24,40 +25,16 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request);
             const queryServerInfo: Packets.QueryServerInfoResponse = await client.sendClassAsync(PacketClass.QueryServerInfo);
             const outDir = `./saves`;
-            console.log(`saving to: ${outDir}/${warId}/${date}.jsonc`);
-            await mylas.buf.save(`${outDir}/${warId}/${date}.protodata`,
-                gzipSync(PacketClass.KeyValueChangeSet.toBuffer({
-                    set: [
-                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.battlefieldstatus).set || [],
-                        ...datastore.ItemstoreToKeyValueSet(KeyValueChangeKey.supplylinestatus).set || [],
-                    ] as KeyValueSet[]
-                }))
-            );
+            console.log(`saving to: ${outDir}/${warId}/${date}.hgmap`);
 
             const thisWar = catalogueResponse.warcataloguedata.find(catalogue => String(catalogue.id) === warId);
 
-            mylas.json.saveS(`${outDir}/${warId}/${date}.jsonc`, {
-                warName: thisWar?.name || "0000",
-                factions: thisWar?.warCatalogueFactions.map(item => {
-                    const faction = item as unknown as Faction;
-                    switch (faction.factionTemplateId.toString()) {
-                        case "1":
-                            faction.color = "#0f0";
-                            break;
-                        case "2":
-                            faction.color = "#00f";
-                            break;
-                        case "3":
-                            faction.color = "#f00";
-                            break;
-                        default:
-                            faction.color = "#000";
-                            break;
-                    }
-                    return item;
-                }),
+            await mylas.buf.save(`${outDir}/${warId}/${date}.hgmap`, toHGMap(
+                thisWar?.name || "0000",
+                thisWar?.warCatalogueFactions || [],
                 queryServerInfo,
-            });
+                datastore,
+            ));
         }
     }
 
