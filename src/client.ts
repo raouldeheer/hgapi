@@ -81,7 +81,8 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             await client.sendClassAsync(PacketClass.subscribewarmapview);
             await client.sendClassAsync(PacketClass.query_war_catalogue_request);
         } else {
-            console.error(`ERROR: ${data}`);
+            console.error("ERROR: join_war_response");
+            console.error(data);
         }
     }).on(ClassKeys.KeyValueChangeSet, data => {
         datastore.SaveData(data);
