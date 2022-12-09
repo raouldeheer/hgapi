@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey, ResponseType, PacketClass, Packets, KeyValueSet } from "hagcp-network-client";
+import { ClassKeys, Client, KeyValueChangeKey, ResponseType, PacketClass, Packets } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import mylas from "mylas";
 import { gzipSync } from "zlib";
@@ -16,10 +16,10 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
     if (!client) return;
     const startTime = Date.now();
     let saveMapTimer: NodeJS.Timer;
-    let warId: string | null = null;
 
     async function saveMapNow() {
         const date = (new Date).toISOString().replace(/[-:.]/g, "");
+        const warId = datastore.GetData("CurrentWar", "0");
         if (warId) {
             if (!client) return;
             const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request);
@@ -67,7 +67,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             lookupFactions.set(element.factionId.toString(), faction);
             lookupTemplateFaction.set(element.factionTemplateId.toString(), faction);
         });
-    }).on(ClassKeys.join_war_response, async (data: { msg: ResponseType, redirectSrv?: string; }) => {
+    }).on(ClassKeys.join_war_response, async data => {
         if (data.msg === ResponseType.ok) {
             if (data.redirectSrv) {
                 console.log(`redirectSrv detected: ${data.redirectSrv}`);
@@ -90,7 +90,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             for (const iterator of data.set) {
                 if (iterator.key === KeyValueChangeKey.war) {
                     const value = iterator.value;
-                    warId = value.id;
                     if (value.sequelwarid !== "0") {
                         console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
                         datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
