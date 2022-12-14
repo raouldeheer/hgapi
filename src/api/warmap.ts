@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { ClassKeys, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
+import { KeyValueChangeKey, PacketClass } from "hagcp-network-client";
 import Long from "long";
 import { checkService, notFound } from "../endpoint";
 import { APIConfig, battlefieldstatus, supplylinestatus } from "../interfaces";
