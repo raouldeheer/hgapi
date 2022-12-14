@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { KeyValueChangeKey } from "hagcp-network-client";
+import { KeyValueChangeKey, Packets } from "hagcp-network-client";
 import { notFound } from "../endpoint";
 import { APIConfig, Battlefield, Supplyline } from "../interfaces";
 
@@ -18,6 +18,13 @@ export function staticInfo(app: Express, config: APIConfig) {
             if (/^\d+$/.test(hostingCenterId)) return datastore.GetData(KeyValueChangeKey.HostingCenterInfo, hostingCenterId) || notFound();
         }
         throw 412;
+    });
+
+    endpoint("/hostingcenters", "no-store", async () => {
+        const hostingcenters = datastore.GetItemStore<Packets.HostingCenterInfo>(KeyValueChangeKey.HostingCenterInfo) || notFound();
+        const result: Record<string, Packets.HostingCenterInfo> = {};
+        for (const [key, value] of hostingcenters) Reflect.set(result, key, value);
+        return result;
     });
 
     endpoint("/battlefield", `public, max-age=${config.staticMaxAge}`, async req => {
