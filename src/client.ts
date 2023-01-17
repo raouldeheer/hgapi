@@ -31,7 +31,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
 
             await mylas.buf.save(`${outDir}/${warId}/${date}.hgmap`, gzipSync(toHGMap(
                 thisWar?.name || "0000",
-                thisWar?.warCatalogueFactions || [],
+                thisWar?.warCatalogueFactions || (Array.from(lookupFactions.values() as unknown as any)),
                 queryServerInfo,
                 datastore,
             )));
