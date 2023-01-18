@@ -6,6 +6,7 @@ import Long from "long";
 import dotenv from "dotenv";
 import { Faction } from "./interfaces";
 import { toHGMap } from "./hgmap";
+import { hglog } from "./hglogger";
 dotenv.config();
 
 export async function startClient(datastore: DataStore, lookupFactions: Map<string, Faction>, lookupTemplateFaction: Map<string, Faction>) {
@@ -115,6 +116,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         console.log(`After ${Date.now() - startTime}ms`);
         clearInterval(saveMapTimer);
         process.exit(1);
-    });
+    }).on("message", hglog);
     return client;
 }
