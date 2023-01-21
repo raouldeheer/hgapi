@@ -20,10 +20,12 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
 
     async function saveMapNow() {
         const date = (new Date).toISOString().replace(/[-:.]/g, "");
-        const warId = datastore.GetData("CurrentWar", "0");
+        const warId: string = datastore.GetData("CurrentWar", "0");
         if (warId) {
             if (!client) return;
-            const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request);
+            const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request, {
+                includeWarId: Long.fromString(warId),
+            });
             const queryServerInfo: Packets.QueryServerInfoResponse = await client.sendClassAsync(PacketClass.QueryServerInfo);
             const outDir = `./saves`;
             console.log(`saving to: ${outDir}/${warId}/${date}.hgmap`);
@@ -80,7 +82,9 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             datastore.ResetData(KeyValueChangeKey.battle);
             lookupFactions.clear();
             await client.sendClassAsync(PacketClass.subscribewarmapview);
-            await client.sendClassAsync(PacketClass.query_war_catalogue_request);
+            await client.sendClassAsync(PacketClass.query_war_catalogue_request, {
+                includeWarId: Long.fromString(datastore.GetData("CurrentWar", "0")),
+            });
         } else {
             console.error("ERROR: join_war_response");
             console.error(data);
