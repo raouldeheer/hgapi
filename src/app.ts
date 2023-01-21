@@ -1,4 +1,4 @@
-import { ClassKeys, Client, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
+import { Client, KeyValueChangeKey, PacketClass } from "hagcp-network-client";
 import { DataStore } from "hagcp-utils";
 import { loadTemplate } from "hagcp-assets";
 import { drawToCanvas } from "hagcp-canvas";
@@ -13,6 +13,8 @@ import expressws from 'express-ws';
 import { CachedRequests } from "./cache/cachedRequests";
 import Long from "long";
 import { getEndpointFunc } from "./endpoint";
+import { hglogMissionDetails } from "./hglogger";
+import { GetMissionDetailsResponse } from "./interfaces";
 
 const staticMaxAge = 2592000;
 
@@ -84,11 +86,15 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
         toBFTitle: getToBFTitle(expressDatastore),
         staticMaxAge,
         websockets: new Map,
-        GetMissionDetailsCache: new CachedRequests(15, (input: string) =>
-            client!.sendClassAsync(PacketClass.GetMissionDetailsRequest, {
+        GetMissionDetailsCache: new CachedRequests(15, async (input: string) => {
+            const t1 = Date.now();
+            const data: GetMissionDetailsResponse = await client!.sendClassAsync(PacketClass.GetMissionDetailsRequest, {
                 missionId: Long.ZERO,
                 battleId: Long.fromString(input),
-            })),
+            });
+            hglogMissionDetails(input, data, `${Date.now()-t1}ms`);
+            return data;
+        }),
         endpoint: () => {},
     }));
 
