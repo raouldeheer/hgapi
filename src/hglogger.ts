@@ -20,7 +20,7 @@ export function hglog(key: string, data: unknown) {
     queue.push(`${date}\t${key}\t${JSON.stringify(data)}\n`);
 }
 
-export function hglogMissionDetails(key: string, data: unknown, time: string) {
+export function hglogMissionDetails(key: string, time: string) {
     const date = (new Date).toISOString();
-    queue.push(`${date}\t${time}\t${key}\t${JSON.stringify(data)}\n`);
+    queue.push(`${date}\t${time}\t${key}\n`);
 }

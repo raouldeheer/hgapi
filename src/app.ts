@@ -92,7 +92,7 @@ export async function startApp(datastore: DataStore, lookupFactions: Map<string,
                 missionId: Long.ZERO,
                 battleId: Long.fromString(input),
             });
-            hglogMissionDetails(input, data, `${Date.now()-t1}ms`);
+            hglogMissionDetails(input, `${Date.now()-t1}ms`);
             return data;
         }),
         endpoint: () => {},
