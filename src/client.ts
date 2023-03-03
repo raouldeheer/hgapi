@@ -89,7 +89,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
             console.error("ERROR: join_war_response");
             console.error(data);
         }
-    }).on(ClassKeys.KeyValueChangeSet, data => {
+    }).on(ClassKeys.KeyValueChangeSet, async data => {
         datastore.SaveData(data);
         if (data?.set) {
             for (const iterator of data.set) {
@@ -97,6 +97,7 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                     const value = iterator.value;
                     if (value.sequelwarid !== "0") {
                         console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
+                        await saveMapNow();
                         datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
                         client.sendClass(PacketClass.join_war_request, {
                             warid: Long.fromString(value.sequelwarid),
