@@ -18,9 +18,8 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
     const startTime = Date.now();
     let saveMapTimer: NodeJS.Timer;
 
-    async function saveMapNow() {
+    async function saveMapNow(warId: string) {
         const date = (new Date).toISOString().replace(/[-:.]/g, "");
-        const warId: string = datastore.GetData("CurrentWar", "0");
         if (warId) {
             if (!client) return;
             const catalogueResponse: Packets.query_war_catalogue_response = await client.sendClassAsync(PacketClass.query_war_catalogue_request, {
@@ -45,7 +44,10 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
         await client.sendClassAsync(PacketClass.query_war_catalogue_request);
         await client.sendClassAsync(PacketClass.subscribewarmapview);
         await client.sendClassAsync(PacketClass.SubscribeHostingCenterInfoView);
-        saveMapTimer = setInterval(saveMapNow, 30000);
+        saveMapTimer = setInterval(async () => {
+            const warId: string = datastore.GetData("CurrentWar", "0");
+            await saveMapNow(warId);
+        }, 30000);
     }).on(ClassKeys.login2_result, data => {
         if (data && data.currentplayer) {
             datastore.SetData("CurrentWar", "0", String(data.currentplayer.war));
@@ -97,7 +99,6 @@ export async function startClient(datastore: DataStore, lookupFactions: Map<stri
                     const value = iterator.value;
                     if (value.sequelwarid !== "0") {
                         console.log(`${value.id} ended, switching to: ${value.sequelwarid}`);
-                        await saveMapNow();
                         datastore.SetData("CurrentWar", "0", String(value.sequelwarid));
                         client.sendClass(PacketClass.join_war_request, {
                             warid: Long.fromString(value.sequelwarid),
