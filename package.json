@@ -18,7 +18,7 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dijkstra-calculator": "^1.0.8",
-    "dotenv": "^16.2.0",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
     "hagcp-assets": "^1.1.5",
