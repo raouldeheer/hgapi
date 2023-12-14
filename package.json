@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",
-    "@types/cors": "^2.8.13",
+    "@types/cors": "^2.8.16",
     "@types/express-ws": "^3.0.1",
     "@types/ip": "^1.1.0",
     "@types/morgan": "^1.9.9",
